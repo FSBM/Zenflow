@@ -60,7 +60,7 @@ const ProjectDetail = () => {
   const [notesList, setNotesList] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', description: '', assignee: '', dueDate: '' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', assignee: '', dueDate: '', priority: 'Medium' });
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [isDetailOpen, setDetailOpen] = useState(false);
 
@@ -180,6 +180,8 @@ const ProjectDetail = () => {
       if (newTask.description) payload.description = newTask.description;
       if (newTask.assignee) payload.assignees = [newTask.assignee];
   if (newTask.dueDate) payload.dueDate = new Date(newTask.dueDate).toISOString();
+    // include priority in payload; backend expects lowercase values: low|medium|high
+    if (newTask.priority) payload.priority = String(newTask.priority).toLowerCase();
       const res = await apiTasks.create(id!, payload);
       const taskObj = res && typeof res === 'object' && 'task' in (res as any) ? (res as any).task : null;
       if (taskObj) {
@@ -391,6 +393,18 @@ const ProjectDetail = () => {
                         onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
                         className="w-full rounded-md border border-input bg-input px-3 py-2 text-input-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                       />
+                    </div>
+                    <div>
+                      <label className="text-sm mb-1 block">Priority</label>
+                      <select
+                        value={newTask.priority}
+                        onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                        className="w-full rounded-md border border-input bg-input px-3 py-2 text-input-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                      </select>
                     </div>
                     <select
                       value={newTask.assignee}
