@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const Sidebar = ({ projects = [], onCreateProject }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -28,7 +29,7 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-notion-border">
+      <div className="p-4">
         <div className="flex items-center justify-between">
           <h2 className={`font-semibold text-notion-text ${isCollapsed ? 'hidden' : 'block'}`}>
             Projects
@@ -51,9 +52,10 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
           </Button>
         </div>
       </div>
+      <Separator />
 
       {/* User Info */}
-      <div className={`p-4 border-b border-notion-border ${isCollapsed ? 'hidden' : 'block'}`}>
+      <div className={`p-4 ${isCollapsed ? 'hidden' : 'block'}`}>
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
@@ -68,6 +70,7 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
           </div>
         </div>
       </div>
+      <Separator />
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto">
@@ -123,8 +126,9 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
         )}
       </div>
 
+      <Separator />
       {/* Footer */}
-      <div className="p-4 border-t border-notion-border">
+      <div className="p-4">
         <div className="space-y-2">
           <button className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-notion-text-muted hover:text-notion-text hover:bg-notion-surface w-full ${
             isCollapsed ? 'justify-center' : 'justify-start'

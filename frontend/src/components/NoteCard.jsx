@@ -3,6 +3,7 @@ import { StickyNote, Trash2 } from 'lucide-react';
 import { formatRelativeTime } from '../utils/helpers';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const NoteCard = ({ note, onDelete }) => {
   return (
@@ -46,7 +47,8 @@ const NoteCard = ({ note, onDelete }) => {
           </p>
         </div>
         
-        <div className="mt-4 pt-3 border-t border-border">
+        <div className="mt-4">
+          <Separator className="mb-3" />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Note</span>
             <span>{note.body.length} characters</span>

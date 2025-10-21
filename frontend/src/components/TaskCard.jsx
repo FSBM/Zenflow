@@ -4,6 +4,7 @@ import { formatDate, formatCurrency, getStatusColor, getPriorityColor } from '..
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -191,7 +192,8 @@ const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
       </div>
 
         {/* Status Badge */}
-        <div className="mt-3 pt-3 border-t border-border">
+        <div className="mt-3">
+          <Separator className="mb-3" />
           <Badge variant="secondary" className={`capitalize ${getStatusColor(task.status)}`}>
             {task.status.replace('-', ' ')}
           </Badge>

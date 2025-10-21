@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, FolderOpen, Calendar, DollarSign, Home, User, Settings, LogOut } from 'lucide-react';
 import Dock from '../components/Dock';
 import Topbar from '../components/Topbar';
+import { Button } from '../components/ui/button';
 import { projectsAPI } from '../api';
 import { formatDate, formatCurrency, formatRelativeTime } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
@@ -79,16 +80,6 @@ const Dashboard = () => {
       onClick: () => navigate('/dashboard')
     },
     {
-      icon: <User size={24} />,
-      label: 'Profile',
-      onClick: () => console.log('Profile clicked')
-    },
-    {
-      icon: <Settings size={24} />,
-      label: 'Settings',
-      onClick: () => console.log('Settings clicked')
-    },
-    {
       icon: <LogOut size={24} />,
       label: 'Sign Out',
       onClick: handleLogout
@@ -160,13 +151,12 @@ const Dashboard = () => {
             <h2 className="text-lg font-semibold text-notion-text">
               Your Projects
             </h2>
-            <button
+            <Button
               onClick={() => setShowCreateModal(true)}
-              className="notion-button-primary flex items-center space-x-2"
             >
               <Plus size={16} />
               <span>New Project</span>
-            </button>
+            </Button>
           </div>
 
           {/* Projects Grid */}
@@ -183,12 +173,11 @@ const Dashboard = () => {
                 }
               </p>
               {!searchTerm && (
-                <button
+                <Button
                   onClick={() => setShowCreateModal(true)}
-                  className="notion-button-primary"
                 >
                   Create Project
-                </button>
+                </Button>
               )}
             </div>
           ) : (
@@ -276,17 +265,16 @@ const Dashboard = () => {
               </div>
 
               <div className="flex items-center justify-end space-x-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="notion-button-secondary"
+                  variant="secondary"
                   disabled={isCreating}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="notion-button-primary flex items-center space-x-2"
                   disabled={isCreating || !newProject.title.trim()}
                 >
                   {isCreating ? (
@@ -297,7 +285,7 @@ const Dashboard = () => {
                       <span>Create</span>
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

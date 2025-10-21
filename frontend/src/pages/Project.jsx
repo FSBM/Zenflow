@@ -5,6 +5,7 @@ import Dock from '../components/Dock';
 import Topbar from '../components/Topbar';
 import TaskCard from '../components/TaskCard';
 import NoteCard from '../components/NoteCard';
+import { Button } from '../components/ui/button';
 import { projectsAPI, tasksAPI, notesAPI } from '../api';
 import { formatDate, formatRelativeTime } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
@@ -215,16 +216,7 @@ const Project = () => {
       label: 'All Projects',
       onClick: () => navigate('/dashboard')
     },
-    {
-      icon: <User size={24} />,
-      label: 'Profile',
-      onClick: () => console.log('Profile clicked')
-    },
-    {
-      icon: <Settings size={24} />,
-      label: 'Settings',
-      onClick: () => console.log('Settings clicked')
-    },
+    
     {
       icon: <LogOut size={24} />,
       label: 'Sign Out',
@@ -261,12 +253,11 @@ const Project = () => {
       <div className="min-h-screen bg-notion-bg flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-notion-text mb-2">Project not found</h2>
-          <button
+          <Button
             onClick={() => navigate('/dashboard')}
-            className="notion-button-primary"
           >
             Back to Dashboard
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -285,12 +276,13 @@ const Project = () => {
           {/* Project Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button
+              <Button
                 onClick={() => navigate('/dashboard')}
-                className="notion-button-ghost p-2"
+                variant="ghost"
+                size="icon"
               >
                 <ArrowLeft size={18} />
-              </button>
+              </Button>
               <div>
                 <h1 className="text-2xl font-bold text-notion-text">{project.title}</h1>
                 {project.description && (
@@ -299,26 +291,26 @@ const Project = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <button
+              <Button
                 onClick={() => {
                   setActiveTab('tasks');
                   setShowTaskModal(true);
                 }}
-                className="notion-button-secondary flex items-center space-x-2"
+                variant="secondary"
               >
                 <Plus size={16} />
                 <span>Add Task</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   setActiveTab('notes');
                   setShowNoteModal(true);
                 }}
-                className="notion-button-secondary flex items-center space-x-2"
+                variant="secondary"
               >
                 <Plus size={16} />
                 <span>Add Note</span>
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -523,12 +515,11 @@ const Project = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-notion-text mb-2">No tasks yet</h3>
                   <p className="text-notion-text-muted mb-4">Create your first task to get started with this project.</p>
-                  <button
+                  <Button
                     onClick={() => setShowTaskModal(true)}
-                    className="notion-button-primary"
                   >
                     Create Task
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -558,12 +549,11 @@ const Project = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-notion-text mb-2">No notes yet</h3>
                   <p className="text-notion-text-muted mb-4">Create your first note to capture important information.</p>
-                  <button
+                  <Button
                     onClick={() => setShowNoteModal(true)}
-                    className="notion-button-primary"
                   >
                     Create Note
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -580,7 +570,7 @@ const Project = () => {
 
       {/* Floating Action Button */}
       <div className="fixed bottom-6 right-6 z-40">
-        <button
+        <Button
           onClick={() => {
             if (activeTab === 'tasks') {
               setShowTaskModal(true);
@@ -588,11 +578,12 @@ const Project = () => {
               setShowNoteModal(true);
             }
           }}
-          className="notion-button-primary p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          size="lg"
+          className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 h-12 w-12"
           title={activeTab === 'tasks' ? 'Add new task' : 'Add new note'}
         >
           <Plus size={24} />
-        </button>
+        </Button>
       </div>
 
       {/* Create Task Modal */}
@@ -656,20 +647,19 @@ const Project = () => {
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowTaskModal(false)}
-                  className="notion-button-ghost"
+                  variant="ghost"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isCreatingTask || !newTask.title.trim()}
-                  className="notion-button-primary"
                 >
                   {isCreatingTask ? 'Creating...' : 'Create Task'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -697,20 +687,19 @@ const Project = () => {
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowNoteModal(false)}
-                  className="notion-button-ghost"
+                  variant="ghost"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isCreatingNote || !newNote.body.trim()}
-                  className="notion-button-primary"
                 >
                   {isCreatingNote ? 'Creating...' : 'Create Note'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
