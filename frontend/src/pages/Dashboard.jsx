@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FolderOpen, Calendar, DollarSign } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
+import { Plus, FolderOpen, Calendar, DollarSign, Home, User, Settings, LogOut } from 'lucide-react';
+import Dock from '../components/Dock';
 import Topbar from '../components/Topbar';
 import { projectsAPI } from '../api';
 import { formatDate, formatCurrency, formatRelativeTime } from '../utils/helpers';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const [newProject, setNewProject] = useState({ title: '', description: '' });
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     fetchProjects();
@@ -48,10 +50,50 @@ const Dashboard = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   const filteredProjects = projects.filter(project =>
     project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Dock items configuration
+  const dockItems = [
+    {
+      icon: <Home size={24} />,
+      label: 'Dashboard',
+      onClick: () => navigate('/dashboard'),
+      className: 'dock-item-home'
+    },
+    {
+      icon: <Plus size={24} />,
+      label: 'New Project',
+      onClick: () => setShowCreateModal(true)
+    },
+    {
+      icon: <FolderOpen size={24} />,
+      label: 'All Projects',
+      onClick: () => navigate('/dashboard')
+    },
+    {
+      icon: <User size={24} />,
+      label: 'Profile',
+      onClick: () => console.log('Profile clicked')
+    },
+    {
+      icon: <Settings size={24} />,
+      label: 'Settings',
+      onClick: () => console.log('Settings clicked')
+    },
+    {
+      icon: <LogOut size={24} />,
+      label: 'Sign Out',
+      onClick: handleLogout
+    }
+  ];
 
   if (isLoading) {
     return (
@@ -62,22 +104,16 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-notion-bg flex">
-      <Sidebar 
-        projects={projects} 
-        onCreateProject={() => setShowCreateModal(true)} 
+    <div className="min-h-screen bg-notion-bg">
+      <Topbar 
+        title="Projects" 
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
       />
       
-      <div className="flex-1 lg:ml-0 ml-0">
-        <Topbar 
-          title="Projects" 
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
-        />
-        
-        <main className="p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <main className="p-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="notion-card p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-notion-accent/10 rounded-lg">
@@ -195,7 +231,14 @@ const Dashboard = () => {
             </div>
           )}
         </main>
-      </div>
+      
+      {/* Dock Component */}
+      <Dock 
+        items={dockItems}
+        magnification={50}
+        baseItemSize={45}
+        spring={{ mass: 0.1, stiffness: 180, damping: 18 }}
+      />
 
       {/* Create Project Modal */}
       {showCreateModal && (

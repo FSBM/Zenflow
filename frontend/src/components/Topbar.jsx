@@ -1,5 +1,7 @@
 import React from 'react';
 import { Search, Bell } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const Topbar = ({ title, searchValue, onSearchChange, searchPlaceholder = "Search...", showSearch = true }) => {
   return (
@@ -17,22 +19,22 @@ const Topbar = ({ title, searchValue, onSearchChange, searchPlaceholder = "Searc
           {showSearch && (
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-notion-text-muted" />
+                <Search className="h-4 w-4 text-muted-foreground" />
               </div>
-              <input
+              <Input
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchValue || ''}
                 onChange={(e) => onSearchChange?.(e.target.value)}
-                className="notion-input pl-10 w-64 text-sm"
+                className="pl-10 w-64 text-sm bg-background border-border"
               />
             </div>
           )}
 
           {/* Notifications */}
-          <button className="notion-button-ghost p-2">
+          <Button variant="ghost" size="icon">
             <Bell size={18} />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

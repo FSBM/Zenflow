@@ -10,6 +10,8 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const Sidebar = ({ projects = [], onCreateProject }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -31,32 +33,36 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
           <h2 className={`font-semibold text-notion-text ${isCollapsed ? 'hidden' : 'block'}`}>
             Projects
           </h2>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="notion-button-ghost p-1 hidden lg:flex"
+            className="hidden lg:flex h-8 w-8"
           >
             {isCollapsed ? <Menu size={18} /> : <X size={18} />}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsMobileOpen(false)}
-            className="notion-button-ghost p-1 lg:hidden"
+            className="lg:hidden h-8 w-8"
           >
             <X size={18} />
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* User Info */}
       <div className={`p-4 border-b border-notion-border ${isCollapsed ? 'hidden' : 'block'}`}>
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-notion-accent rounded-full flex items-center justify-center text-white text-sm font-medium">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-notion-text truncate">
+            <p className="text-sm font-medium text-foreground truncate">
               {user?.name || 'User'}
             </p>
-            <p className="text-xs text-notion-text-muted truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {user?.email || 'user@example.com'}
             </p>
           </div>
@@ -80,15 +86,16 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
           </Link>
 
           {/* Create Project Button */}
-          <button
+          <Button
+            variant="ghost"
             onClick={onCreateProject}
-            className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-notion-text-muted hover:text-notion-text hover:bg-notion-surface w-full ${
+            className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-accent w-full ${
               isCollapsed ? 'justify-center' : 'justify-start'
             }`}
           >
             <Plus size={18} />
             {!isCollapsed && <span>New Project</span>}
-          </button>
+          </Button>
         </div>
 
         {/* Projects List */}

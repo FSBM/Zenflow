@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Calendar, Users, Edit, Trash2, CheckCircle, Circle, Clock, FileText, StickyNote } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
+import { ArrowLeft, Plus, Calendar, Users, Edit, Trash2, CheckCircle, Circle, Clock, FileText, StickyNote, Home, User, Settings, LogOut, FolderOpen } from 'lucide-react';
+import Dock from '../components/Dock';
 import Topbar from '../components/Topbar';
 import TaskCard from '../components/TaskCard';
 import NoteCard from '../components/NoteCard';
 import { projectsAPI, tasksAPI, notesAPI } from '../api';
 import { formatDate, formatRelativeTime } from '../utils/helpers';
+import { useAuth } from '../context/AuthContext';
 
 const Project = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -185,6 +187,51 @@ const Project = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // Dock items configuration
+  const dockItems = [
+    {
+      icon: <Home size={24} />,
+      label: 'Dashboard',
+      onClick: () => navigate('/dashboard'),
+      className: 'dock-item-home'
+    },
+    {
+      icon: <ArrowLeft size={24} />,
+      label: 'Back',
+      onClick: () => navigate('/dashboard')
+    },
+    {
+      icon: activeTab === 'tasks' ? <Plus size={24} /> : <StickyNote size={24} />,
+      label: activeTab === 'tasks' ? 'New Task' : 'New Note',
+      onClick: () => activeTab === 'tasks' ? setShowTaskModal(true) : setShowNoteModal(true)
+    },
+    {
+      icon: <FolderOpen size={24} />,
+      label: 'All Projects',
+      onClick: () => navigate('/dashboard')
+    },
+    {
+      icon: <User size={24} />,
+      label: 'Profile',
+      onClick: () => console.log('Profile clicked')
+    },
+    {
+      icon: <Settings size={24} />,
+      label: 'Settings',
+      onClick: () => console.log('Settings clicked')
+    },
+    {
+      icon: <LogOut size={24} />,
+      label: 'Sign Out',
+      onClick: handleLogout
+    }
+  ];
+
   // Filter tasks and notes based on search and status
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = (task.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -226,21 +273,15 @@ const Project = () => {
   }
 
   return (
-    <div className="min-h-screen bg-notion-bg flex">
-      <Sidebar 
-        projects={projects} 
-        onCreateProject={() => navigate('/dashboard')} 
+    <div className="min-h-screen bg-notion-bg">
+      <Topbar 
+        title={project.title} 
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder={activeTab === 'tasks' ? 'Search tasks...' : 'Search notes...'}
       />
       
-      <div className="flex-1 lg:ml-0 ml-0">
-        <Topbar 
-          title={project.title} 
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
-          searchPlaceholder={activeTab === 'tasks' ? 'Search tasks...' : 'Search notes...'}
-        />
-        
-        <main className="p-6">
+      <main className="p-6">
           {/* Project Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
@@ -528,7 +569,14 @@ const Project = () => {
             </div>
           )}
         </main>
-      </div>
+      
+      {/* Dock Component */}
+      <Dock 
+        items={dockItems}
+        magnification={50}
+        baseItemSize={45}
+        spring={{ mass: 0.1, stiffness: 180, damping: 18 }}
+      />
 
       {/* Floating Action Button */}
       <div className="fixed bottom-6 right-6 z-40">

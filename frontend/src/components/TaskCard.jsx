@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, DollarSign, Paperclip, User, MoreHorizontal, Edit, Trash2, Check, X } from 'lucide-react';
 import { formatDate, formatCurrency, getStatusColor, getPriorityColor } from '../utils/helpers';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -41,10 +44,11 @@ const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
   };
 
   return (
-    <div
+    <Card 
       onClick={() => onClick?.(task)}
-      className="notion-card p-4 cursor-pointer hover:bg-notion-surface/50 transition-all duration-150 group"
+      className="p-4 cursor-pointer hover:bg-accent/50 transition-all duration-150 group border-border"
     >
+      <CardContent className="p-0">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-3 flex-1">
@@ -186,13 +190,14 @@ const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
         </div>
       </div>
 
-      {/* Status Badge */}
-      <div className="mt-3 pt-3 border-t border-notion-border">
-        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(task.status)} bg-current/10`}>
-          {task.status.replace('-', ' ')}
-        </span>
-      </div>
-    </div>
+        {/* Status Badge */}
+        <div className="mt-3 pt-3 border-t border-border">
+          <Badge variant="secondary" className={`capitalize ${getStatusColor(task.status)}`}>
+            {task.status.replace('-', ' ')}
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

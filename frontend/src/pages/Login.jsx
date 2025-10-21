@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api';
 import { isValidEmail } from '../utils/helpers';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -73,90 +77,93 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-notion-text mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Welcome back
           </h1>
-          <p className="text-notion-text-muted">
+          <p className="text-muted-foreground">
             Sign in to your account to continue
           </p>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="notion-card p-8 space-y-6">
-          {errors.submit && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3">
-              <p className="text-red-400 text-sm">{errors.submit}</p>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-notion-text mb-2">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`notion-input w-full ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className="text-red-400 text-sm mt-1">{errors.email}</p>
+        <Card className="p-8 bg-card border-border">
+          <CardHeader className="text-center p-0 pb-6">
+            <CardTitle className="text-2xl">Sign in to your account</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {errors.submit && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                  <p className="text-destructive text-sm">{errors.submit}</p>
+                </div>
               )}
-            </div>
 
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-notion-text mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`notion-input w-full ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
-                placeholder="Enter your password"
-              />
-              {errors.password && (
-                <p className="text-red-400 text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
-          </div>
+              <div className="space-y-4">
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={errors.email ? 'border-destructive' : ''}
+                    placeholder="Enter your email"
+                  />
+                  {errors.email && (
+                    <p className="text-destructive text-sm">{errors.email}</p>
+                  )}
+                </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="notion-button-primary w-full flex items-center justify-center"
-          >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              'Sign in'
-            )}
-          </button>
+                {/* Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={errors.password ? 'border-destructive' : ''}
+                    placeholder="Enter your password"
+                  />
+                  {errors.password && (
+                    <p className="text-destructive text-sm">{errors.password}</p>
+                  )}
+                </div>
+              </div>
 
-          {/* Register Link */}
-          <div className="text-center">
-            <p className="text-notion-text-muted text-sm">
-              Don't have an account?{' '}
-              <Link 
-                to="/register" 
-                className="text-notion-accent hover:text-notion-accent/80 font-medium transition-colors"
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full"
               >
-                Create one
-              </Link>
-            </p>
-          </div>
-        </form>
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  'Sign in'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Register Link */}
+        <div className="text-center">
+          <p className="text-muted-foreground text-sm">
+            Don't have an account?{' '}
+            <Link 
+              to="/register" 
+              className="text-primary hover:text-primary/80 font-medium transition-colors"
+            >
+              Create one
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
