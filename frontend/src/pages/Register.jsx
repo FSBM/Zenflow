@@ -3,8 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api';
 import { isValidEmail } from '../utils/helpers';
-import AnimatedHero from '../components/AnimatedHero';
-import AnimatedCard from '../components/AnimatedCard';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -88,19 +86,25 @@ const Register = () => {
   };
 
   return (
-    <AnimatedHero
-      title="Create Account"
-      subtitle="Get started with your project management journey"
-      silkColor="#7c3aed"
-    >
-      <div className="w-full max-w-md mx-auto">
-        <AnimatedCard className="animate-slide-up" padding="p-8" glassmorphism={true} silkVariant="warm">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.submit && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3">
-                <p className="text-red-400 text-sm">{errors.submit}</p>
-              </div>
-            )}
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md w-full space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-notion-text mb-2">
+            Create your account
+          </h1>
+          <p className="text-notion-text-muted">
+            Get started with your project management
+          </p>
+        </div>
+
+        {/* Register Form */}
+        <form onSubmit={handleSubmit} className="notion-card p-8 space-y-6">
+          {errors.submit && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3">
+              <p className="text-red-400 text-sm">{errors.submit}</p>
+            </div>
+          )}
 
           <div className="space-y-4">
             {/* Name */}
@@ -210,9 +214,8 @@ const Register = () => {
             </p>
           </div>
         </form>
-        </AnimatedCard>
       </div>
-    </AnimatedHero>
+    </div>
   );
 };
 

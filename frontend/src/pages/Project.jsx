@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Calendar, Users, Edit, Trash2, CheckCircle, Circle, Clock, FileText, StickyNote, Search, LogOut, X } from 'lucide-react';
-import { VscHome, VscArchive, VscAccount, VscSettingsGear, VscAdd, VscTasklist, VscNote } from 'react-icons/vsc';
-import { useAuth } from '../context/AuthContext';
-import Dock from '../components/Dock';
+import { ArrowLeft, Plus, Calendar, Users, Edit, Trash2, CheckCircle, Circle, Clock, FileText, StickyNote } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
 import TaskCard from '../components/TaskCard';
 import NoteCard from '../components/NoteCard';
-import AnimatedBackground from '../components/AnimatedBackground';
-import AnimatedCard from '../components/AnimatedCard';
 import { projectsAPI, tasksAPI, notesAPI } from '../api';
 import { formatDate, formatRelativeTime } from '../utils/helpers';
 
 const Project = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { logout } = useAuth();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -34,49 +30,6 @@ const Project = () => {
   const [newNote, setNewNote] = useState({ body: '' });
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [isCreatingNote, setIsCreatingNote] = useState(false);
-
-  // Dock items configuration
-  const dockItems = [
-    { 
-      icon: <VscHome size={18} />, 
-      label: 'Dashboard', 
-      onClick: () => navigate('/dashboard'),
-      className: 'hover:border-blue-500'
-    },
-    { 
-      icon: <VscTasklist size={18} />, 
-      label: 'Tasks', 
-      onClick: () => setActiveTab('tasks'),
-      className: activeTab === 'tasks' ? 'border-notion-accent bg-notion-accent/10' : 'hover:border-yellow-500'
-    },
-    { 
-      icon: <VscNote size={18} />, 
-      label: 'Notes', 
-      onClick: () => setActiveTab('notes'),
-      className: activeTab === 'notes' ? 'border-notion-accent bg-notion-accent/10' : 'hover:border-purple-500'
-    },
-    { 
-      icon: <VscAdd size={18} />, 
-      label: 'Add New', 
-      onClick: () => {
-        if (activeTab === 'tasks') {
-          setShowTaskModal(true);
-        } else {
-          setShowNoteModal(true);
-        }
-      },
-      className: 'hover:border-green-500'
-    },
-    { 
-      icon: <LogOut size={18} />, 
-      label: 'Sign Out', 
-      onClick: () => {
-        logout();
-        navigate('/login');
-      },
-      className: 'hover:border-red-500'
-    },
-  ];
 
   useEffect(() => {
     fetchProject();
@@ -119,25 +72,6 @@ const Project = () => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  // Modal keyboard shortcuts
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        if (showTaskModal) {
-          setShowTaskModal(false);
-        }
-        if (showNoteModal) {
-          setShowNoteModal(false);
-        }
-      }
-    };
-
-    if (showTaskModal || showNoteModal) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [showTaskModal, showNoteModal]);
 
   const fetchProject = async () => {
     try {
@@ -292,11 +226,23 @@ const Project = () => {
   }
 
   return (
-    <AnimatedBackground variant="default" overlayOpacity={0.98}>
-      <div className="min-h-screen">
-        <main className="p-6 dock-spacing">
+    <div className="min-h-screen bg-notion-bg flex">
+      <Sidebar 
+        projects={projects} 
+        onCreateProject={() => navigate('/dashboard')} 
+      />
+      
+      <div className="flex-1 lg:ml-0 ml-0">
+        <Topbar 
+          title={project.title} 
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder={activeTab === 'tasks' ? 'Search tasks...' : 'Search notes...'}
+        />
+        
+        <main className="p-6">
           {/* Project Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/dashboard')}
@@ -305,35 +251,45 @@ const Project = () => {
                 <ArrowLeft size={18} />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-notion-text">{project.title}</h1>
+                <h1 className="text-2xl font-bold text-notion-text">{project.title}</h1>
                 {project.description && (
                   <p className="text-notion-text-muted mt-1">{project.description}</p>
                 )}
               </div>
             </div>
-            
-            {/* Search Bar */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-notion-text-muted" />
-              </div>
-              <input
-                type="text"
-                placeholder={activeTab === 'tasks' ? 'Search tasks...' : 'Search notes...'}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="notion-input pl-10 w-64 text-sm"
-              />
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => {
+                  setActiveTab('tasks');
+                  setShowTaskModal(true);
+                }}
+                className="notion-button-secondary flex items-center space-x-2"
+              >
+                <Plus size={16} />
+                <span>Add Task</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('notes');
+                  setShowNoteModal(true);
+                }}
+                className="notion-button-secondary flex items-center space-x-2"
+              >
+                <Plus size={16} />
+                <span>Add Note</span>
+              </button>
             </div>
           </div>
 
           {/* Tabs */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex space-x-1 bg-notion-surface/50 backdrop-blur-md rounded-lg p-1 border-2 border-notion-border">
+            <div className="flex space-x-1 bg-notion-surface rounded-lg p-1">
               <button
                 onClick={() => setActiveTab('tasks')}
-                className={`tab-button ${
-                  activeTab === 'tasks' ? 'active' : ''
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                  activeTab === 'tasks'
+                    ? 'bg-notion-bg text-notion-accent'
+                    : 'text-notion-text-muted hover:text-notion-text'
                 }`}
                 title="Switch to tasks (Cmd+1)"
               >
@@ -342,8 +298,10 @@ const Project = () => {
               </button>
               <button
                 onClick={() => setActiveTab('notes')}
-                className={`tab-button ${
-                  activeTab === 'notes' ? 'active' : ''
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                  activeTab === 'notes'
+                    ? 'bg-notion-bg text-notion-accent'
+                    : 'text-notion-text-muted hover:text-notion-text'
                 }`}
                 title="Switch to notes (Cmd+2)"
               >
@@ -361,7 +319,7 @@ const Project = () => {
 
           {/* Project Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <AnimatedCard className="" padding="p-4" silkVariant="subtle" glassmorphism={true}>
+            <div className="notion-card p-4">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-500/10 rounded-lg">
                   <Circle className="h-5 w-5 text-blue-400" />
@@ -371,9 +329,9 @@ const Project = () => {
                   <p className="text-lg font-semibold text-notion-text">{tasks.length}</p>
                 </div>
               </div>
-            </AnimatedCard>
+            </div>
 
-            <AnimatedCard className="" padding="p-4" silkVariant="warm" glassmorphism={true}>
+            <div className="notion-card p-4">
               <div className="flex items-center">
                 <div className="p-2 bg-yellow-500/10 rounded-lg">
                   <Clock className="h-5 w-5 text-yellow-400" />
@@ -383,9 +341,9 @@ const Project = () => {
                   <p className="text-lg font-semibold text-notion-text">{inProgressTasks.length}</p>
                 </div>
               </div>
-            </AnimatedCard>
+            </div>
 
-            <AnimatedCard className="" padding="p-4" silkVariant="cool" glassmorphism={true}>
+            <div className="notion-card p-4">
               <div className="flex items-center">
                 <div className="p-2 bg-green-500/10 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-green-400" />
@@ -395,9 +353,9 @@ const Project = () => {
                   <p className="text-lg font-semibold text-notion-text">{completedTasks.length}</p>
                 </div>
               </div>
-            </AnimatedCard>
+            </div>
 
-            <AnimatedCard className="" padding="p-4" silkVariant="accent" glassmorphism={true}>
+            <div className="notion-card p-4">
               <div className="flex items-center">
                 <div className="p-2 bg-purple-500/10 rounded-lg">
                   <StickyNote className="h-5 w-5 text-purple-400" />
@@ -407,7 +365,7 @@ const Project = () => {
                   <p className="text-lg font-semibold text-notion-text">{notes.length}</p>
                 </div>
               </div>
-            </AnimatedCard>
+            </div>
           </div>
 
           {/* Content Section */}
@@ -417,32 +375,40 @@ const Project = () => {
               <div className="flex flex-wrap gap-2 mb-6">
                 <button
                   onClick={() => setStatusFilter('all')}
-                  className={`status-filter-button ${
-                    statusFilter === 'all' ? 'active' : ''
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    statusFilter === 'all'
+                      ? 'bg-notion-accent text-white'
+                      : 'bg-notion-surface text-notion-text-muted hover:text-notion-text hover:bg-notion-border'
                   }`}
                 >
                   All ({tasks.length})
                 </button>
                 <button
                   onClick={() => setStatusFilter('todo')}
-                  className={`status-filter-button ${
-                    statusFilter === 'todo' ? 'active' : ''
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    statusFilter === 'todo'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-notion-surface text-notion-text-muted hover:text-notion-text hover:bg-notion-border'
                   }`}
                 >
                   Todo ({tasks.filter(t => t.status === 'todo').length})
                 </button>
                 <button
                   onClick={() => setStatusFilter('in-progress')}
-                  className={`status-filter-button ${
-                    statusFilter === 'in-progress' ? 'active' : ''
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    statusFilter === 'in-progress'
+                      ? 'bg-yellow-500 text-white'
+                      : 'bg-notion-surface text-notion-text-muted hover:text-notion-text hover:bg-notion-border'
                   }`}
                 >
                   In Progress ({tasks.filter(t => t.status === 'in-progress').length})
                 </button>
                 <button
                   onClick={() => setStatusFilter('done')}
-                  className={`status-filter-button ${
-                    statusFilter === 'done' ? 'active' : ''
+                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    statusFilter === 'done'
+                      ? 'bg-green-500 text-white'
+                      : 'bg-notion-surface text-notion-text-muted hover:text-notion-text hover:bg-notion-border'
                   }`}
                 >
                   Done ({tasks.filter(t => t.status === 'done').length})
@@ -518,7 +484,7 @@ const Project = () => {
                   <p className="text-notion-text-muted mb-4">Create your first task to get started with this project.</p>
                   <button
                     onClick={() => setShowTaskModal(true)}
-                    className="notion-button notion-button-primary"
+                    className="notion-button-primary"
                   >
                     Create Task
                   </button>
@@ -553,7 +519,7 @@ const Project = () => {
                   <p className="text-notion-text-muted mb-4">Create your first note to capture important information.</p>
                   <button
                     onClick={() => setShowNoteModal(true)}
-                    className="notion-button notion-button-primary"
+                    className="notion-button-primary"
                   >
                     Create Note
                   </button>
@@ -574,7 +540,7 @@ const Project = () => {
               setShowNoteModal(true);
             }
           }}
-          className="notion-button notion-button-primary notion-button-icon rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          className="notion-button-primary p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           title={activeTab === 'tasks' ? 'Add new task' : 'Add new note'}
         >
           <Plus size={24} />
@@ -583,172 +549,126 @@ const Project = () => {
 
       {/* Create Task Modal */}
       {showTaskModal && (
-        <div className="modal-backdrop">
-          <div className="modal-content w-full max-w-lg mx-auto">
-            <AnimatedCard className="animate-slide-up" padding="p-8" glassmorphism={true} silkVariant="accent">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-notion-text">Create New Task</h3>
-                <button
-                  onClick={() => setShowTaskModal(false)}
-                  className="p-2 hover:bg-notion-surface rounded-lg transition-colors"
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-notion-surface border border-notion-border rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-notion-text mb-4">Create New Task</h3>
+            
+            <form onSubmit={handleCreateTask} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-notion-text mb-2">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+                  className="notion-input w-full"
+                  placeholder="Task title"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-notion-text mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={newTask.description}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
+                  className="notion-input w-full h-24 resize-none"
+                  placeholder="Task description"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-notion-text mb-2">
+                  Priority
+                </label>
+                <select
+                  value={newTask.priority}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
+                  className="notion-input w-full"
                 >
-                  <X size={20} className="text-notion-text-muted" />
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-notion-text mb-2">
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  value={newTask.dueDate}
+                  onChange={(e) => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
+                  className="notion-input w-full"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowTaskModal(false)}
+                  className="notion-button-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreatingTask || !newTask.title.trim()}
+                  className="notion-button-primary"
+                >
+                  {isCreatingTask ? 'Creating...' : 'Create Task'}
                 </button>
               </div>
-              
-              <form onSubmit={handleCreateTask} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-notion-text mb-2">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={newTask.title}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
-                    className="notion-input w-full"
-                    placeholder="Task title"
-                    autoFocus
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-notion-text mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={newTask.description}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
-                    className="notion-input w-full h-32 resize-none"
-                    placeholder="Task description"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-notion-text mb-2">
-                      Priority
-                    </label>
-                    <select
-                      value={newTask.priority}
-                      onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
-                      className="notion-input w-full"
-                    >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-notion-text mb-2">
-                      Due Date
-                    </label>
-                    <input
-                      type="date"
-                      value={newTask.dueDate}
-                      onChange={(e) => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
-                      className="notion-input w-full"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-notion-border">
-                  <button
-                    type="button"
-                    onClick={() => setShowTaskModal(false)}
-                    className="notion-button notion-button-ghost"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreatingTask || !newTask.title.trim()}
-                    className="notion-button notion-button-primary"
-                  >
-                    {isCreatingTask ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                        <span>Creating...</span>
-                      </div>
-                    ) : (
-                      'Create Task'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </AnimatedCard>
+            </form>
           </div>
         </div>
       )}
 
       {/* Create Note Modal */}
       {showNoteModal && (
-        <div className="modal-backdrop">
-          <div className="modal-content w-full max-w-2xl mx-auto">
-            <AnimatedCard className="animate-slide-up" padding="p-8" glassmorphism={true} silkVariant="cool">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-notion-text">Create New Note</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-notion-surface border border-notion-border rounded-lg p-6 w-full max-w-2xl">
+            <h3 className="text-lg font-semibold text-notion-text mb-4">Create New Note</h3>
+            
+            <form onSubmit={handleCreateNote} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-notion-text mb-2">
+                  Note Content *
+                </label>
+                <textarea
+                  value={newNote.body}
+                  onChange={(e) => setNewNote(prev => ({ ...prev, body: e.target.value }))}
+                  className="notion-input w-full h-48 resize-none"
+                  placeholder="Write your note here..."
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
+                  type="button"
                   onClick={() => setShowNoteModal(false)}
-                  className="p-2 hover:bg-notion-surface rounded-lg transition-colors"
+                  className="notion-button-ghost"
                 >
-                  <X size={20} className="text-notion-text-muted" />
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreatingNote || !newNote.body.trim()}
+                  className="notion-button-primary"
+                >
+                  {isCreatingNote ? 'Creating...' : 'Create Note'}
                 </button>
               </div>
-              
-              <form onSubmit={handleCreateNote} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-notion-text mb-2">
-                    Note Content *
-                  </label>
-                  <textarea
-                    value={newNote.body}
-                    onChange={(e) => setNewNote(prev => ({ ...prev, body: e.target.value }))}
-                    className="notion-input w-full h-64 resize-none"
-                    placeholder="Write your note here..."
-                    autoFocus
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-notion-border">
-                  <button
-                    type="button"
-                    onClick={() => setShowNoteModal(false)}
-                    className="notion-button notion-button-ghost"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreatingNote || !newNote.body.trim()}
-                    className="notion-button notion-button-primary"
-                  >
-                    {isCreatingNote ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                        <span>Creating...</span>
-                      </div>
-                    ) : (
-                      'Create Note'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </AnimatedCard>
+            </form>
           </div>
         </div>
       )}
-
-      {/* Dock Navigation */}
-      <Dock 
-        items={dockItems}
-        panelHeight={68}
-        baseItemSize={50}
-        magnification={70}
-      />
-    </AnimatedBackground>
+    </div>
   );
 };
 

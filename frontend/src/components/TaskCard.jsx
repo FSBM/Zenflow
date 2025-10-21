@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, DollarSign, Paperclip, User, MoreHorizontal, Edit, Trash2, Check, X } from 'lucide-react';
 import { formatDate, formatCurrency, getStatusColor, getPriorityColor } from '../utils/helpers';
-import AnimatedCard from './AnimatedCard';
 
 const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -42,12 +41,9 @@ const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
   };
 
   return (
-    <AnimatedCard
+    <div
       onClick={() => onClick?.(task)}
-      className="cursor-pointer group animate-slide-up"
-      padding="p-4"
-      silkVariant="subtle"
-      glassmorphism={true}
+      className="notion-card p-4 cursor-pointer hover:bg-notion-surface/50 transition-all duration-150 group"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -191,12 +187,12 @@ const TaskCard = ({ task, onClick, onUpdate, onDelete }) => {
       </div>
 
       {/* Status Badge */}
-      <div className="mt-3 pt-3 border-t border-white/10">
+      <div className="mt-3 pt-3 border-t border-notion-border">
         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(task.status)} bg-current/10`}>
           {task.status.replace('-', ' ')}
         </span>
       </div>
-    </AnimatedCard>
+    </div>
   );
 };
 

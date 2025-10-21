@@ -1,11 +1,10 @@
 import React from 'react';
 import { StickyNote, Trash2 } from 'lucide-react';
 import { formatRelativeTime } from '../utils/helpers';
-import AnimatedCard from './AnimatedCard';
 
 const NoteCard = ({ note, onDelete }) => {
   return (
-    <AnimatedCard className="group animate-slide-up" padding="p-6" silkVariant="cool" glassmorphism={true}>
+    <div className="notion-card p-6 group hover:bg-notion-surface/50 transition-all duration-150">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20 transition-colors">
@@ -42,13 +41,13 @@ const NoteCard = ({ note, onDelete }) => {
         </p>
       </div>
       
-      <div className="mt-4 pt-3 border-t border-white/10">
+      <div className="mt-4 pt-3 border-t border-notion-border">
         <div className="flex items-center justify-between text-xs text-notion-text-muted">
           <span>Note</span>
           <span>{note.body.length} characters</span>
         </div>
       </div>
-    </AnimatedCard>
+    </div>
   );
 };
 

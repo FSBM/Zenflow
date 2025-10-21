@@ -3,8 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api';
 import { isValidEmail } from '../utils/helpers';
-import AnimatedHero from '../components/AnimatedHero';
-import AnimatedCard from '../components/AnimatedCard';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -71,14 +69,20 @@ const Login = () => {
   };
 
   return (
-    <AnimatedHero
-      title="Welcome Back"
-      subtitle="Sign in to your account to continue your journey"
-      silkColor="#4338ca"
-    >
-      <div className="w-full mt-3  mx-auto">
-        <AnimatedCard className="animate-slide-up" padding="p-8" glassmorphism={true} silkVariant="accent">
-          <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md w-full space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-notion-text mb-2">
+            Welcome back
+          </h1>
+          <p className="text-notion-text-muted">
+            Sign in to your account to continue
+          </p>
+        </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="notion-card p-8 space-y-6">
           {errors.submit && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3">
               <p className="text-red-400 text-sm">{errors.submit}</p>
@@ -153,9 +157,8 @@ const Login = () => {
             </p>
           </div>
         </form>
-        </AnimatedCard>
       </div>
-    </AnimatedHero>
+    </div>
   );
 };
 
