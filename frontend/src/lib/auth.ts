@@ -36,9 +36,20 @@ export default { setToken, getToken, clearAuth, setUser, getUser };
 // Convenience auth calls that integrate with the API helper
 import { request } from './api';
 
+type AuthResponse = {
+  token?: string;
+  user?: Record<string, unknown> | null;
+  [k: string]: unknown;
+};
+
+function isAuthResponse(v: unknown): v is AuthResponse {
+  if (!v || typeof v !== 'object') return false;
+  return 'token' in (v as Record<string, unknown>) || 'user' in (v as Record<string, unknown>);
+}
+
 export async function login(email: string, password: string) {
-  const res = await request('/api/auth/login', { method: 'POST', body: { email, password } });
-  if (res?.token) {
+  const res = await request<AuthResponse>('/api/auth/login', { method: 'POST', body: { email, password } });
+  if (isAuthResponse(res) && res.token) {
     setToken(res.token);
     setUser(res.user ?? null);
   }
@@ -46,8 +57,8 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(name: string, email: string, password: string) {
-  const res = await request('/api/auth/register', { method: 'POST', body: { name, email, password } });
-  if (res?.token) {
+  const res = await request<AuthResponse>('/api/auth/register', { method: 'POST', body: { name, email, password } });
+  if (isAuthResponse(res) && res.token) {
     setToken(res.token);
     setUser(res.user ?? null);
   }
