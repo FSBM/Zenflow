@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api';
 import { isValidEmail } from '../utils/helpers';
-import AnimatedCard from '../components/AnimatedCard';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -72,83 +75,80 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-light text-primary">Sign In</h2>
-          <p className="text-gray-600 mt-2">Enter your credentials to continue</p>
-        </div>
+        <Card className="animate-fade-in">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-3xl font-light">Sign In</CardTitle>
+            <CardDescription>Enter your credentials to continue</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {errors.submit && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                  <p className="text-destructive text-sm">{errors.submit}</p>
+                </div>
+              )}
 
-        <AnimatedCard className="animate-slide-up" padding="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded p-3">
-                <p className="text-red-600 text-sm">{errors.submit}</p>
+              <div className="space-y-4">
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={errors.email ? 'border-destructive' : ''}
+                    placeholder="Enter your email"
+                  />
+                  {errors.email && (
+                    <p className="text-destructive text-sm">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={errors.password ? 'border-destructive' : ''}
+                    placeholder="Enter your password"
+                  />
+                  {errors.password && (
+                    <p className="text-destructive text-sm">{errors.password}</p>
+                  )}
+                </div>
               </div>
-            )}
 
-            <div className="space-y-4">
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-primary mb-2">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`minimal-input ${errors.email ? 'border-red-500' : ''}`}
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="text-red-600 text-sm mt-1">{errors.email}</p>
-                )}
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading ? 'Signing in...' : 'Sign In'}
+              </Button>
+
+              {/* Register Link */}
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-primary hover:underline font-medium">
+                    Sign up
+                  </Link>
+                </p>
               </div>
-
-              {/* Password */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-primary mb-2">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`minimal-input ${errors.password ? 'border-red-500' : ''}`}
-                  placeholder="Enter your password"
-                />
-                {errors.password && (
-                  <p className="text-red-600 text-sm mt-1">{errors.password}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="minimal-button w-full"
-            >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </button>
-
-            {/* Register Link */}
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-primary hover:underline font-medium">
-                  Sign up
-                </Link>
-              </p>
-            </div>
-          </form>
-        </AnimatedCard>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

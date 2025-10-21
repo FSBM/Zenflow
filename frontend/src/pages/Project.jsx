@@ -41,19 +41,19 @@ const Project = () => {
       icon: <VscHome size={18} />, 
       label: 'Dashboard', 
       onClick: () => navigate('/dashboard'),
-      className: 'hover:border-blue-500'
+      className: 'hover:border-gray-400'
     },
     { 
       icon: <VscTasklist size={18} />, 
       label: 'Tasks', 
       onClick: () => setActiveTab('tasks'),
-      className: activeTab === 'tasks' ? 'border-notion-accent bg-notion-accent/10' : 'hover:border-yellow-500'
+      className: activeTab === 'tasks' ? 'border-gray-700 bg-gray-700/10' : 'hover:border-yellow-500'
     },
     { 
       icon: <VscNote size={18} />, 
       label: 'Notes', 
       onClick: () => setActiveTab('notes'),
-      className: activeTab === 'notes' ? 'border-notion-accent bg-notion-accent/10' : 'hover:border-purple-500'
+      className: activeTab === 'notes' ? 'border-gray-700 bg-gray-700/10' : 'hover:border-purple-500'
     },
     { 
       icon: <VscAdd size={18} />, 
@@ -269,20 +269,20 @@ const Project = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-notion-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-notion-accent"></div>
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-notion-bg flex items-center justify-center">
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-notion-text mb-2">Project not found</h2>
+          <h2 className="text-xl font-semibold text-primary mb-2">Project not found</h2>
           <button
             onClick={() => navigate('/dashboard')}
-            className="notion-button-primary"
+            className="minimal-button"
           >
             Back to Dashboard
           </button>
@@ -300,14 +300,14 @@ const Project = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="notion-button-ghost p-2"
+                className="minimal-button-ghost p-2"
               >
                 <ArrowLeft size={18} />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-notion-text">{project.title}</h1>
+                <h1 className="text-3xl font-bold text-primary">{project.title}</h1>
                 {project.description && (
-                  <p className="text-notion-text-muted mt-1">{project.description}</p>
+                  <p className="text-gray-500 mt-1">{project.description}</p>
                 )}
               </div>
             </div>
@@ -315,21 +315,21 @@ const Project = () => {
             {/* Search Bar */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-notion-text-muted" />
+                <Search className="h-4 w-4 text-gray-400" />
               </div>
               <input
                 type="text"
                 placeholder={activeTab === 'tasks' ? 'Search tasks...' : 'Search notes...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="notion-input pl-10 w-64 text-sm"
+                className="minimal-input pl-10 w-64 text-sm"
               />
             </div>
           </div>
 
           {/* Tabs */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex space-x-1 bg-notion-surface/50 backdrop-blur-md rounded-lg p-1 border-2 border-notion-border">
+            <div className="flex space-x-1 bg-gray-100/50 backdrop-blur-md rounded-lg p-1 border-2 border-border">
               <button
                 onClick={() => setActiveTab('tasks')}
                 className={`tab-button ${
@@ -352,7 +352,7 @@ const Project = () => {
               </button>
             </div>
             
-            <div className="text-xs text-notion-text-muted">
+            <div className="text-xs text-gray-500">
               <span className="hidden md:inline">
                 Press Cmd+T for new task • Cmd+N for new note • Cmd+K to search
               </span>
@@ -363,12 +363,12 @@ const Project = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <AnimatedCard className="" padding="p-4" silkVariant="subtle" glassmorphism={true}>
               <div className="flex items-center">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <Circle className="h-5 w-5 text-blue-400" />
+                <div className="p-2 bg-gray-500/10 rounded-lg">
+                  <Circle className="h-5 w-5 text-gray-400" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-notion-text-muted">Total Tasks</p>
-                  <p className="text-lg font-semibold text-notion-text">{tasks.length}</p>
+                  <p className="text-sm text-gray-500">Total Tasks</p>
+                  <p className="text-lg font-semibold text-primary">{tasks.length}</p>
                 </div>
               </div>
             </AnimatedCard>
@@ -379,8 +379,8 @@ const Project = () => {
                   <Clock className="h-5 w-5 text-yellow-400" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-notion-text-muted">In Progress</p>
-                  <p className="text-lg font-semibold text-notion-text">{inProgressTasks.length}</p>
+                  <p className="text-sm text-gray-500">In Progress</p>
+                  <p className="text-lg font-semibold text-primary">{inProgressTasks.length}</p>
                 </div>
               </div>
             </AnimatedCard>
@@ -391,8 +391,8 @@ const Project = () => {
                   <CheckCircle className="h-5 w-5 text-green-400" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-notion-text-muted">Completed</p>
-                  <p className="text-lg font-semibold text-notion-text">{completedTasks.length}</p>
+                  <p className="text-sm text-gray-500">Completed</p>
+                  <p className="text-lg font-semibold text-primary">{completedTasks.length}</p>
                 </div>
               </div>
             </AnimatedCard>
@@ -403,8 +403,8 @@ const Project = () => {
                   <StickyNote className="h-5 w-5 text-purple-400" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-notion-text-muted">Notes</p>
-                  <p className="text-lg font-semibold text-notion-text">{notes.length}</p>
+                  <p className="text-sm text-gray-500">Notes</p>
+                  <p className="text-lg font-semibold text-primary">{notes.length}</p>
                 </div>
               </div>
             </AnimatedCard>
@@ -452,7 +452,7 @@ const Project = () => {
               {/* Pending Tasks */}
               {pendingTasks.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold text-notion-text mb-4">Pending Tasks ({pendingTasks.length})</h2>
+                  <h2 className="text-lg font-semibold text-primary mb-4">Pending Tasks ({pendingTasks.length})</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {pendingTasks.map(task => (
                       <TaskCard
@@ -469,7 +469,7 @@ const Project = () => {
               {/* In Progress Tasks */}
               {inProgressTasks.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold text-notion-text mb-4">In Progress ({inProgressTasks.length})</h2>
+                  <h2 className="text-lg font-semibold text-primary mb-4">In Progress ({inProgressTasks.length})</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {inProgressTasks.map(task => (
                       <TaskCard
@@ -486,7 +486,7 @@ const Project = () => {
               {/* Completed Tasks */}
               {completedTasks.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold text-notion-text mb-4">Completed ({completedTasks.length})</h2>
+                  <h2 className="text-lg font-semibold text-primary mb-4">Completed ({completedTasks.length})</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {completedTasks.map(task => (
                       <TaskCard
@@ -503,22 +503,22 @@ const Project = () => {
               {/* Empty State for Tasks */}
               {filteredTasks.length === 0 && tasks.length > 0 && (
                 <div className="text-center py-12">
-                  <CheckCircle className="mx-auto h-12 w-12 text-notion-text-muted mb-4" />
-                  <h3 className="text-lg font-medium text-notion-text mb-2">No tasks found</h3>
-                  <p className="text-notion-text-muted mb-4">Try adjusting your search term</p>
+                  <CheckCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-primary mb-2">No tasks found</h3>
+                  <p className="text-gray-500 mb-4">Try adjusting your search term</p>
                 </div>
               )}
 
               {tasks.length === 0 && (
                 <div className="text-center py-12">
-                  <div className="p-4 bg-notion-surface rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <CheckCircle className="h-8 w-8 text-notion-text-muted" />
+                  <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <CheckCircle className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-notion-text mb-2">No tasks yet</h3>
-                  <p className="text-notion-text-muted mb-4">Create your first task to get started with this project.</p>
+                  <h3 className="text-lg font-semibold text-primary mb-2">No tasks yet</h3>
+                  <p className="text-gray-500 mb-4">Create your first task to get started with this project.</p>
                   <button
                     onClick={() => setShowTaskModal(true)}
-                    className="notion-button notion-button-primary"
+                    className="minimal-button"
                   >
                     Create Task
                   </button>
@@ -540,20 +540,20 @@ const Project = () => {
                 </div>
               ) : notes.length > 0 ? (
                 <div className="text-center py-12">
-                  <StickyNote className="mx-auto h-12 w-12 text-notion-text-muted mb-4" />
-                  <h3 className="text-lg font-medium text-notion-text mb-2">No notes found</h3>
-                  <p className="text-notion-text-muted mb-4">Try adjusting your search term</p>
+                  <StickyNote className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-primary mb-2">No notes found</h3>
+                  <p className="text-gray-500 mb-4">Try adjusting your search term</p>
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="p-4 bg-notion-surface rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <StickyNote className="h-8 w-8 text-notion-text-muted" />
+                  <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <StickyNote className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-notion-text mb-2">No notes yet</h3>
-                  <p className="text-notion-text-muted mb-4">Create your first note to capture important information.</p>
+                  <h3 className="text-lg font-semibold text-primary mb-2">No notes yet</h3>
+                  <p className="text-gray-500 mb-4">Create your first note to capture important information.</p>
                   <button
                     onClick={() => setShowNoteModal(true)}
-                    className="notion-button notion-button-primary"
+                    className="minimal-button"
                   >
                     Create Note
                   </button>
@@ -574,7 +574,7 @@ const Project = () => {
               setShowNoteModal(true);
             }
           }}
-          className="notion-button notion-button-primary notion-button-icon rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          className="minimal-button rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
           title={activeTab === 'tasks' ? 'Add new task' : 'Add new note'}
         >
           <Plus size={24} />
@@ -587,25 +587,25 @@ const Project = () => {
           <div className="modal-content w-full max-w-lg mx-auto">
             <AnimatedCard className="animate-slide-up" padding="p-8" glassmorphism={true} silkVariant="accent">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-notion-text">Create New Task</h3>
+                <h3 className="text-xl font-semibold text-primary">Create New Task</h3>
                 <button
                   onClick={() => setShowTaskModal(false)}
-                  className="p-2 hover:bg-notion-surface rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X size={20} className="text-notion-text-muted" />
+                  <X size={20} className="text-gray-500" />
                 </button>
               </div>
               
               <form onSubmit={handleCreateTask} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-notion-text mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Title *
                   </label>
                   <input
                     type="text"
                     value={newTask.title}
                     onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
-                    className="notion-input w-full"
+                    className="minimal-input w-full"
                     placeholder="Task title"
                     autoFocus
                     required
@@ -613,26 +613,26 @@ const Project = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-notion-text mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Description
                   </label>
                   <textarea
                     value={newTask.description}
                     onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
-                    className="notion-input w-full h-32 resize-none"
+                    className="minimal-input w-full h-32 resize-none"
                     placeholder="Task description"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-notion-text mb-2">
+                    <label className="block text-sm font-medium text-primary mb-2">
                       Priority
                     </label>
                     <select
                       value={newTask.priority}
                       onChange={(e) => setNewTask(prev => ({ ...prev, priority: e.target.value }))}
-                      className="notion-input w-full"
+                      className="minimal-input w-full"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -641,30 +641,30 @@ const Project = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-notion-text mb-2">
+                    <label className="block text-sm font-medium text-primary mb-2">
                       Due Date
                     </label>
                     <input
                       type="date"
                       value={newTask.dueDate}
                       onChange={(e) => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
-                      className="notion-input w-full"
+                      className="minimal-input w-full"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-notion-border">
+                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-border">
                   <button
                     type="button"
                     onClick={() => setShowTaskModal(false)}
-                    className="notion-button notion-button-ghost"
+                    className="minimal-button-ghost"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isCreatingTask || !newTask.title.trim()}
-                    className="notion-button notion-button-primary"
+                    className="minimal-button"
                   >
                     {isCreatingTask ? (
                       <div className="flex items-center space-x-2">
@@ -688,42 +688,42 @@ const Project = () => {
           <div className="modal-content w-full max-w-2xl mx-auto">
             <AnimatedCard className="animate-slide-up" padding="p-8" glassmorphism={true} silkVariant="cool">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-notion-text">Create New Note</h3>
+                <h3 className="text-xl font-semibold text-primary">Create New Note</h3>
                 <button
                   onClick={() => setShowNoteModal(false)}
-                  className="p-2 hover:bg-notion-surface rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X size={20} className="text-notion-text-muted" />
+                  <X size={20} className="text-gray-500" />
                 </button>
               </div>
               
               <form onSubmit={handleCreateNote} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-notion-text mb-2">
+                  <label className="block text-sm font-medium text-primary mb-2">
                     Note Content *
                   </label>
                   <textarea
                     value={newNote.body}
                     onChange={(e) => setNewNote(prev => ({ ...prev, body: e.target.value }))}
-                    className="notion-input w-full h-64 resize-none"
+                    className="minimal-input w-full h-64 resize-none"
                     placeholder="Write your note here..."
                     autoFocus
                     required
                   />
                 </div>
 
-                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-notion-border">
+                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-border">
                   <button
                     type="button"
                     onClick={() => setShowNoteModal(false)}
-                    className="notion-button notion-button-ghost"
+                    className="minimal-button-ghost"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isCreatingNote || !newNote.body.trim()}
-                    className="notion-button notion-button-primary"
+                    className="minimal-button"
                   >
                     {isCreatingNote ? (
                       <div className="flex items-center space-x-2">

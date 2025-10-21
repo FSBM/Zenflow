@@ -4,7 +4,13 @@ import { Plus, FolderOpen, Calendar, DollarSign, Settings, LogOut, Search, X } f
 import { VscHome, VscArchive, VscAccount, VscSettingsGear, VscAdd } from 'react-icons/vsc';
 import { useAuth } from '../context/AuthContext';
 import Dock from '../components/Dock';
-import AnimatedCard from '../components/AnimatedCard';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { projectsAPI } from '../api';
 import { formatDate, formatCurrency, formatRelativeTime } from '../utils/helpers';
 
@@ -96,218 +102,209 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <main className="p-6 pb-32">
         {/* Header Section */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-light text-primary mb-2">Welcome back, {user?.name}!</h1>
-            <p className="text-gray-600">Manage your projects and tasks efficiently</p>
+            <h1 className="text-3xl font-light text-foreground mb-2">Welcome back, {user?.name}!</h1>
+            <p className="text-muted-foreground">Manage your projects and tasks efficiently</p>
           </div>
           
           {/* Search Bar */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
+              <Search className="h-4 w-4 text-muted-foreground" />
             </div>
-            <input
+            <Input
               type="text"
               placeholder="Search projects..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="minimal-input pl-10 w-64 text-sm"
+              className="pl-10 w-64 text-sm"
             />
           </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <AnimatedCard className="animate-fade-in" padding="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-gray-100 rounded">
-                <FolderOpen className="h-6 w-6 text-gray-600" />
+          <Card className="animate-fade-in">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-muted rounded-md">
+                  <FolderOpen className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Total Projects</p>
+                  <p className="text-2xl font-light text-foreground">{projects.length}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Projects</p>
-                <p className="text-2xl font-light text-primary">{projects.length}</p>
-              </div>
-            </div>
-          </AnimatedCard>
+            </CardContent>
+          </Card>
 
-          <AnimatedCard className="animate-fade-in" padding="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-gray-100 rounded">
-                <Calendar className="h-6 w-6 text-gray-600" />
+          <Card className="animate-fade-in">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-muted rounded-md">
+                  <Calendar className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Active Projects</p>
+                  <p className="text-2xl font-light text-foreground">{activeProjects}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Projects</p>
-                <p className="text-2xl font-light text-primary">{activeProjects}</p>
-              </div>
-            </div>
-          </AnimatedCard>
+            </CardContent>
+          </Card>
 
-          <AnimatedCard className="animate-fade-in" padding="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-gray-100 rounded">
-                <DollarSign className="h-6 w-6 text-gray-600" />
+          <Card className="animate-fade-in">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-muted rounded-md">
+                  <DollarSign className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Total Value</p>
+                  <p className="text-2xl font-light text-foreground">{formatCurrency(totalValue)}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Value</p>
-                <p className="text-2xl font-light text-primary">{formatCurrency(totalValue)}</p>
-              </div>
-            </div>
-          </AnimatedCard>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Projects Section */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-medium text-primary">Your Projects</h2>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="minimal-button"
-          >
-            <Plus size={16} />
+          <h2 className="text-xl font-medium text-foreground">Your Projects</h2>
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
             New Project
-          </button>
+          </Button>
         </div>
 
         {/* Projects Grid */}
         {filteredProjects.length === 0 ? (
-          <AnimatedCard className="text-center" padding="p-12">
-            <FolderOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-600 mb-2">No projects found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm ? 'Try adjusting your search terms' : 'Get started by creating your first project'}
-            </p>
-            {!searchTerm && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="minimal-button"
-              >
-                <Plus size={16} />
-                Create Project
-              </button>
-            )}
-          </AnimatedCard>
+          <Card className="text-center animate-fade-in">
+            <CardContent className="p-12">
+              <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">No projects found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm ? 'Try adjusting your search terms' : 'Get started by creating your first project'}
+              </p>
+              {!searchTerm && (
+                <Button onClick={() => setShowCreateModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Project
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map(project => (
-              <AnimatedCard 
+              <Card 
                 key={project._id} 
-                className="cursor-pointer animate-slide-up group"
+                className="cursor-pointer animate-fade-in group hover:shadow-md transition-all duration-200"
                 onClick={() => navigate(`/project/${project._id}`)}
-                padding="p-6"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gray-100 rounded group-hover:bg-gray-200 transition-colors">
-                      <FolderOpen className="h-5 w-5 text-gray-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-primary truncate">{project.title}</h3>
-                      <p className="text-sm text-gray-500">
-                        Created {formatRelativeTime(project.createdAt)}
-                      </p>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-muted rounded-md group-hover:bg-accent transition-colors">
+                        <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-foreground truncate">{project.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Created {formatRelativeTime(project.createdAt)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {project.description && (
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {project.description}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium capitalize">
-                    {project.status || 'active'}
-                  </span>
-                  {project.budget && (
-                    <span className="text-gray-500">
-                      {formatCurrency(project.budget)}
-                    </span>
+                  {project.description && (
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                      {project.description}
+                    </p>
                   )}
-                </div>
-              </AnimatedCard>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <Badge variant="secondary" className="capitalize">
+                      {project.status || 'active'}
+                    </Badge>
+                    {project.budget && (
+                      <span className="text-muted-foreground">
+                        {formatCurrency(project.budget)}
+                      </span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
 
         {/* Create Project Modal */}
-        {showCreateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded border max-w-md w-full">
-              <div className="flex items-center justify-between p-6 border-b">
-                <h3 className="text-lg font-medium text-primary">Create New Project</h3>
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X size={20} />
-                </button>
+        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Project</DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleCreateProject} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Project Title *</Label>
+                <Input
+                  id="title"
+                  type="text"
+                  value={newProject.title}
+                  onChange={(e) => setNewProject(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter project title"
+                  required
+                />
               </div>
               
-              <form onSubmit={handleCreateProject} className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2">
-                      Project Title *
-                    </label>
-                    <input
-                      type="text"
-                      value={newProject.title}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, title: e.target.value }))}
-                      className="minimal-input"
-                      placeholder="Enter project title"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={newProject.description}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
-                      className="minimal-input"
-                      rows={3}
-                      placeholder="Enter project description (optional)"
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex justify-end space-x-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="minimal-button-secondary"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreating}
-                    className="minimal-button"
-                  >
-                    {isCreating ? 'Creating...' : 'Create Project'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newProject.description}
+                  onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  placeholder="Enter project description (optional)"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isCreating}
+                >
+                  {isCreating ? 'Creating...' : 'Create Project'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </main>
 
       {/* Dock */}
       <Dock items={dockItems} />
+      
+      {/* Dock spacing */}
+      <div className="dock-spacing"></div>
     </div>
   );
 };

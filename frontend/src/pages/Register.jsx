@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api';
 import { isValidEmail } from '../utils/helpers';
-import AnimatedCard from '../components/AnimatedCard';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -91,123 +94,116 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-light text-primary">Create Account</h2>
-          <p className="text-gray-600 mt-2">Join us to manage your projects</p>
-        </div>
+        <Card className="animate-fade-in">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-3xl font-light">Create Account</CardTitle>
+            <CardDescription>Join us to manage your projects</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {errors.submit && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                  <p className="text-destructive text-sm">{errors.submit}</p>
+                </div>
+              )}
 
-        <AnimatedCard className="animate-slide-up" padding="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded p-3">
-                <p className="text-red-600 text-sm">{errors.submit}</p>
+              <div className="space-y-4">
+                {/* Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={errors.name ? 'border-destructive' : ''}
+                    placeholder="Enter your full name"
+                  />
+                  {errors.name && (
+                    <p className="text-destructive text-sm">{errors.name}</p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={errors.email ? 'border-destructive' : ''}
+                    placeholder="Enter your email"
+                  />
+                  {errors.email && (
+                    <p className="text-destructive text-sm">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={errors.password ? 'border-destructive' : ''}
+                    placeholder="Create a password"
+                  />
+                  {errors.password && (
+                    <p className="text-destructive text-sm">{errors.password}</p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={errors.confirmPassword ? 'border-destructive' : ''}
+                    placeholder="Confirm your password"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-destructive text-sm">{errors.confirmPassword}</p>
+                  )}
+                </div>
               </div>
-            )}
 
-            <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-primary mb-2">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`minimal-input ${errors.name ? 'border-red-500' : ''}`}
-                  placeholder="Enter your full name"
-                />
-                {errors.name && (
-                  <p className="text-red-600 text-sm mt-1">{errors.name}</p>
-                )}
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading ? 'Creating account...' : 'Create Account'}
+              </Button>
+
+              {/* Login Link */}
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-primary hover:underline font-medium">
+                    Sign in
+                  </Link>
+                </p>
               </div>
-
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-primary mb-2">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`minimal-input ${errors.email ? 'border-red-500' : ''}`}
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="text-red-600 text-sm mt-1">{errors.email}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-primary mb-2">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`minimal-input ${errors.password ? 'border-red-500' : ''}`}
-                  placeholder="Create a password"
-                />
-                {errors.password && (
-                  <p className="text-red-600 text-sm mt-1">{errors.password}</p>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-primary mb-2">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`minimal-input ${errors.confirmPassword ? 'border-red-500' : ''}`}
-                  placeholder="Confirm your password"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-red-600 text-sm mt-1">{errors.confirmPassword}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="minimal-button w-full"
-            >
-              {isLoading ? 'Creating account...' : 'Create Account'}
-            </button>
-
-            {/* Login Link */}
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link to="/login" className="text-primary hover:underline font-medium">
-                  Sign in
-                </Link>
-              </p>
-            </div>
-          </form>
-        </AnimatedCard>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
