@@ -55,10 +55,10 @@ const upload = multer({
 });
 
 // @route   POST /api/uploads
-// @desc    Upload a file
+// @desc    Upload a file and optionally associate with a project (projectId in body)
 // @access  Private
 router.post('/', auth, (req, res) => {
-  upload.single('file')(req, res, (err) => {
+  upload.single('file')(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({
@@ -75,12 +75,33 @@ router.post('/', auth, (req, res) => {
     }
 
     if (!req.file) {
-      return res.status(400).json({
-        message: 'No file uploaded'
-      });
+      return res.status(400).json({ message: 'No file uploaded' });
     }
 
     const fileUrl = `/api/uploads/${req.file.filename}`;
+
+    // If projectId provided, attach metadata to project.files
+    const projectId = req.body.projectId || req.query.projectId;
+    if (projectId) {
+      try {
+        const Project = require('../models/Project');
+        const proj = await Project.findById(projectId);
+        if (proj) {
+          proj.files = proj.files || [];
+          proj.files.push({
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            url: fileUrl,
+            mimeType: req.file.mimetype,
+            size: req.file.size,
+            uploadedAt: new Date()
+          });
+          await proj.save();
+        }
+      } catch (e) {
+        console.error('Failed to attach file to project:', e);
+      }
+    }
 
     res.json({
       message: 'File uploaded successfully',
@@ -89,7 +110,8 @@ router.post('/', auth, (req, res) => {
         originalName: req.file.originalname,
         url: fileUrl,
         mimeType: req.file.mimetype,
-        size: req.file.size
+        size: req.file.size,
+        uploadedAt: new Date()
       }
     });
   });
@@ -123,7 +145,7 @@ router.get('/:filename', (req, res) => {
 // @route   DELETE /api/uploads/:filename
 // @desc    Delete an uploaded file
 // @access  Private
-router.delete('/:filename', auth, (req, res) => {
+router.delete('/:filename', auth, async (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(uploadsDir, filename);
 
@@ -135,10 +157,18 @@ router.delete('/:filename', auth, (req, res) => {
   }
 
   try {
+    // Remove file from disk
     fs.unlinkSync(filePath);
-    res.json({
-      message: 'File deleted successfully'
-    });
+
+    // Also remove any references from projects.files
+    try {
+      const Project = require('../models/Project');
+      await Project.updateMany({ 'files.filename': filename }, { $pull: { files: { filename } } });
+    } catch (e) {
+      console.error('Failed to remove file reference from projects:', e);
+    }
+
+    res.json({ message: 'File deleted successfully' });
   } catch (error) {
     console.error('Error deleting file:', error);
     res.status(500).json({

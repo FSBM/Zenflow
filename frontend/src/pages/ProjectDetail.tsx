@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { projects as apiProjects, tasks as apiTasks, notes as apiNotes, invites as apiInvites } from '@/lib/api';
+import { projects as apiProjects, tasks as apiTasks, notes as apiNotes, invites as apiInvites, uploads as apiUploads } from '@/lib/api';
 import Navbar from "@/components/Navbar";
 import StatusBadge from "@/components/StatusBadge";
 import PriorityBadge from "@/components/PriorityBadge";
@@ -24,7 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Plus, Search, MoreHorizontal, Upload, FileText, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Plus, Search, MoreHorizontal, Upload, FileText, Image as ImageIcon, Download, Trash } from "lucide-react";
+import { API_BASE } from '@/lib/api';
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -35,6 +36,15 @@ type Priority = "High" | "Medium" | "Low";
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
+  // Helper to ensure a relative upload path becomes a valid absolute URL
+  const normalizeUrl = (rel?: string) => {
+    if (!rel) return rel;
+    if (rel.startsWith('http')) return rel;
+    // Remove duplicate leading slashes and ensure single slash after API_BASE
+    const base = API_BASE.replace(/\/$/, '');
+    const path = rel.replace(/^\/+/, '');
+    return `${base}/${path}`;
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -45,6 +55,7 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(false);
   const [notesText, setNotesText] = useState('');
   const [notesList, setNotesList] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', assignee: '', dueDate: '' });
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
@@ -78,6 +89,10 @@ const ProjectDetail = () => {
   };
 
   const updateTaskOnClient = (updatedTask: any) => {
+    // Ensure status uses UI-friendly label so the frontend remains consistent
+    if (updatedTask && typeof updatedTask === 'object' && 'status' in updatedTask) {
+  try { updatedTask.status = apiToUiStatus(String(updatedTask.status)); } catch (e) { /* ignore */ }
+    }
     setTasks((prev) => prev.map((t) => (String(t.id) === String(updatedTask.id) ? updatedTask : t)));
   };
 
@@ -90,8 +105,26 @@ const ProjectDetail = () => {
         const projectData = (res && typeof res === 'object' && 'project' in (res as any)) ? (res as any).project : null;
         const tasksData = (res && typeof res === 'object' && 'tasks' in (res as any)) ? (res as any).tasks : [];
         setProject(projectData ?? null);
-        setTasks(Array.isArray(tasksData) ? tasksData : []);
+  setTasks(Array.isArray(tasksData) ? tasksData.map((t:any) => ({ ...t, status: apiToUiStatus(String(t.status)) })) : []);
         setNotesText(projectData && typeof projectData === 'object' && 'notes' in projectData ? String((projectData as any).notes ?? '') : '');
+        // Load attached files if present on the project
+        if (projectData && Array.isArray((projectData as any).files)) {
+          setFiles((projectData as any).files.map((f: any) => {
+            const rel = f.url || `/api/uploads/${f.filename}`;
+            const url = normalizeUrl(rel);
+            return ({
+              id: f.filename || f.id || `${f.filename}-${Date.now()}`,
+              filename: f.filename,
+              name: f.originalName || f.filename,
+              url,
+              mimeType: f.mimeType,
+              size: f.size,
+              uploadedAt: f.uploadedAt
+            });
+          }));
+        } else {
+          setFiles([]);
+        }
         // load notes separately from notes endpoint for listing
         try {
           const notesRes = await apiNotes.list(id!);
@@ -147,8 +180,9 @@ const ProjectDetail = () => {
       const res = await apiTasks.create(id!, payload);
       const taskObj = res && typeof res === 'object' && 'task' in (res as any) ? (res as any).task : null;
       if (taskObj) {
-        // replace temp with server task
-        setTasks((prev) => prev.map((x) => (x.id === tempId ? taskObj : x)));
+        // replace temp with server task (normalize status to UI label)
+  const normalized = { ...taskObj, status: apiToUiStatus(String((taskObj as any).status)) };
+        setTasks((prev) => prev.map((x) => (x.id === tempId ? normalized : x)));
       } else {
         // if no task returned, remove temp
         setTasks((prev) => prev.filter((x) => x.id !== tempId));
@@ -419,7 +453,37 @@ const ProjectDetail = () => {
                       </TableCell>
                       
                       <TableCell className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
-                        <StatusBadge status={task.status} />
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            // cycle: Todo -> In Progress -> Done -> Todo
+                            // normalize current status to API form to avoid mismatches
+                            const currentApi = uiToApiStatus(String(task.status || ''));
+                            let nextApi = 'todo';
+                            if (currentApi === 'todo' || currentApi === 'backlog') nextApi = 'in-progress';
+                            else if (currentApi === 'in-progress') nextApi = 'done';
+                            else if (currentApi === 'done') nextApi = 'todo';
+
+                            // optimistic UI: show the friendly API->UI label
+                            const prev = tasks;
+                            const friendlyNext = apiToUiStatus(nextApi);
+                            setTasks((t) => t.map((x) => (x.id === task.id ? { ...x, status: friendlyNext } : x)));
+
+                            // call API to persist change; if it fails, revert UI
+                            try {
+                              const res: any = await apiTasks.update(task.id, { status: nextApi });
+                              if (res && res.task) updateTaskOnClient(res.task);
+                            } catch (err) {
+                              console.error('Failed to update status', err);
+                              setTasks(prev);
+                              window.alert('Failed to update status');
+                            }
+                          }}
+                          title="Click to cycle status: Todo → In Progress → Done"
+                          className="inline-block"
+                        >
+                          <StatusBadge status={task.status} />
+                        </button>
                       </TableCell>
                       <TableCell className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
                         <PriorityBadge priority={task.priority} />
@@ -436,41 +500,15 @@ const ProjectDetail = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
                             <DropdownMenuItem onClick={async () => {
-                              // optimistic update
+                              // Reset to default: set status to Todo and clear assignees
                               const prev = tasks;
-                              const updated = { ...task, status: 'In Progress' };
+                              const updated = { ...task, status: 'Todo', assignees: [] };
                               setTasks((t) => t.map((x) => (x.id === task.id ? updated : x)));
                               try {
-                                const res: any = await apiTasks.update(task.id, { status: 'in-progress' });
+                                const res: any = await apiTasks.update(task.id, { status: 'todo', assignees: [] });
                                 if (res && res.task) updateTaskOnClient(res.task);
-                              } catch (e) { console.error(e); setTasks(prev); window.alert('Failed to set In Progress'); }
-                            }}>Mark In Progress</DropdownMenuItem>
-                            <DropdownMenuItem onClick={async () => {
-                              const prev = tasks;
-                              const updated = { ...task, status: 'Done' };
-                              setTasks((t) => t.map((x) => (x.id === task.id ? updated : x)));
-                              try {
-                                const res: any = await apiTasks.update(task.id, { status: 'done' });
-                                if (res && res.task) updateTaskOnClient(res.task);
-                              } catch (e) { console.error(e); setTasks(prev); window.alert('Failed to set Done'); }
-                            }}>Mark Done</DropdownMenuItem>
-                            <DropdownMenuItem>
-                              Assign to:
-                              <div className="mt-2">
-                                {teamMembers.map((m: any) => (
-                                  <button key={m.id || m._id} className="block w-full text-left px-2 py-1 text-sm hover:bg-slate-100" onClick={async () => {
-                                    const prev = tasks;
-                                    const memberId = m.id || m._id;
-                                    // optimistic assign
-                                    setTasks((t) => t.map((x) => x.id === task.id ? { ...x, assignees: [{ id: memberId, name: m.name }] } : x));
-                                    try {
-                                      const res: any = await apiTasks.update(task.id, { assignees: [memberId] });
-                                      if (res && res.task) updateTaskOnClient(res.task);
-                                    } catch (e) { console.error(e); setTasks(prev); window.alert('Failed to assign member'); }
-                                  }}>{m.name ?? m.email}</button>
-                                ))}
-                              </div>
-                            </DropdownMenuItem>
+                              } catch (e) { console.error(e); setTasks(prev); window.alert('Failed to reset task'); }
+                            }}>Reset to Default</DropdownMenuItem>
                             <DropdownMenuItem onClick={async () => {
                               if (!confirm('Delete this task?')) return;
                               const prev = tasks;
@@ -605,13 +643,47 @@ const ProjectDetail = () => {
           {/* Files Tab */}
           <TabsContent value="files" className="space-y-6">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {files.length} file{files.length !== 1 ? "s" : ""} uploaded
-              </p>
-              <Button className="gap-2">
-                <Upload className="h-4 w-4" />
-                Upload File
-              </Button>
+                <p className="text-sm text-muted-foreground">
+                  {files.length} file{files.length !== 1 ? "s" : ""} uploaded
+                </p>
+                <div className="flex items-center gap-2">
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    try {
+                      // optimistic UI: add temp file
+                      const temp = { id: `temp-${Date.now()}`, filename: `temp-${Date.now()}`, name: f.name, url: URL.createObjectURL(f), mimeType: f.type, size: f.size, uploadedAt: new Date().toISOString() };
+                      setFiles((s) => [temp, ...s]);
+                      const res: any = await apiUploads.uploadFile('file', f, id);
+                      if (res && res.file) {
+                        const rel = res.file.url || `/api/uploads/${res.file.filename}`;
+                        const normalizedUrl = normalizeUrl(rel);
+                        const added = { id: res.file.filename, filename: res.file.filename, name: res.file.originalName || res.file.filename, url: normalizedUrl, mimeType: res.file.mimeType, size: res.file.size, uploadedAt: res.file.uploadedAt || new Date().toISOString() };
+                        setFiles((s) => [added, ...s.filter(x => x.id !== temp.id)]);
+                      } else {
+                        // reload project files
+                        const projRes = await apiProjects.get(id!);
+                        const projectData2 = projRes && typeof projRes === 'object' && 'project' in (projRes as any) ? (projRes as any).project : null;
+                        if (projectData2 && Array.isArray((projectData2 as any).files)) {
+                          setFiles((projectData2 as any).files.map((f: any) => {
+                            const rel2 = f.url || `/api/uploads/${f.filename}`;
+                            const url2 = normalizeUrl(rel2);
+                            return { id: f.filename || f.id, filename: f.filename, name: f.originalName || f.filename, url: url2, mimeType: f.mimeType, size: f.size, uploadedAt: f.uploadedAt };
+                          }));
+                        }
+                      }
+                    } catch (err:any) {
+                      console.error('Upload failed', err);
+                      setFiles((prev) => prev.filter(x => !String(x.id).startsWith('temp-')));
+                      const msg = err?.details?.message || err?.message || 'Upload failed';
+                      window.alert(String(msg));
+                    } finally {
+                      // clear file input value so same file can be reselected
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }
+                  }} />
+                  <Button className="gap-2" onClick={() => fileInputRef.current?.click()}><Upload className="h-4 w-4" />Upload File</Button>
+                </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -620,7 +692,7 @@ const ProjectDetail = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
-                        {file.type === "pdf" ? (
+                        {file.mimeType && file.mimeType.includes('pdf') ? (
                           <FileText className="h-5 w-5 text-destructive" />
                         ) : (
                           <ImageIcon className="h-5 w-5 text-primary" />
@@ -628,19 +700,48 @@ const ProjectDetail = () => {
                         <div>
                           <CardTitle className="text-sm">{file.name}</CardTitle>
                           <CardDescription className="text-xs">
-                            {file.size}
+                            {typeof file.size === 'number' ? `${(file.size/1024).toFixed(1)} KB` : file.size}
                           </CardDescription>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                          // download or open file in new tab
+                          if (!file.url) return;
+                          // open in new tab - browsers will handle download/content-disposition
+                          window.open(file.url, '_blank');
+                        }}>
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                          if (!confirm('Delete this file?')) return;
+                          const prev = files;
+                          setFiles((farr) => farr.filter((x) => x.id !== file.id));
+                          try {
+                            await apiUploads.deleteFile(file.filename);
+                          } catch (e) {
+                            console.error('Failed to delete file', e);
+                            setFiles(prev);
+                            window.alert('Failed to delete file');
+                          }
+                        }}>
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xs text-muted-foreground">
-                      Uploaded {file.uploadedAt ? new Date(String(file.uploadedAt)).toLocaleDateString() : '—'}
-                    </p>
+                    {file.mimeType && file.mimeType.startsWith('image/') ? (
+                      <img src={file.url} alt={file.name} className="max-h-48 w-full object-contain rounded" />
+                    ) : file.mimeType && file.mimeType.includes('pdf') ? (
+                      <div className="w-full">
+                        <object data={file.url} type="application/pdf" className="w-full h-64 rounded border" aria-label={file.name}>
+                          <p className="text-sm">PDF preview not available. <a href={file.url} target="_blank" rel="noreferrer" className="underline">Open file</a></p>
+                        </object>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Uploaded {file.uploadedAt ? new Date(String(file.uploadedAt)).toLocaleDateString() : '—'} • <a href={file.url} target="_blank" rel="noreferrer" className="underline">Open</a></p>
+                    )}
                   </CardContent>
                 </Card>
               ))}

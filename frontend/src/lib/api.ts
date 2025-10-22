@@ -85,11 +85,13 @@ async function request<T = unknown>(path: string, options: RequestOptions = {}):
   return (await resp.text()) as unknown as T;
 }
 
-async function upload(path: string, fileFieldName: string, file: File) {
+async function upload(path: string, fileFieldName: string, file: File, extra: Record<string, string | undefined> = {}) {
   const url = `${API_BASE.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
   const token = getToken();
   const form = new FormData();
   form.append(fileFieldName, file);
+  // append extra fields (e.g., projectId)
+  Object.entries(extra).forEach(([k, v]) => { if (v !== undefined) form.append(k, v); });
 
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -156,7 +158,8 @@ const notes = {
 };
 
 const uploads = {
-  uploadFile: async (fileFieldName: string, file: File) => upload('/api/uploads', fileFieldName, file),
+  uploadFile: async (fileFieldName: string, file: File, projectId?: string) => upload('/api/uploads', fileFieldName, file, { projectId }),
+  deleteFile: async (filename: string) => request(`/api/uploads/${filename}`, { method: 'DELETE' }),
 };
 
 export { projects, tasks, notes, uploads, invites };

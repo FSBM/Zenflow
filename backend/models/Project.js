@@ -38,6 +38,15 @@ const projectSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  // Attached files for this project (stored on disk under /uploads)
+  files: [{
+    filename: String,
+    originalName: String,
+    url: String,
+    mimeType: String,
+    size: Number,
+    uploadedAt: { type: Date, default: Date.now }
+  }],
   createdAt: {
     type: Date,
     default: Date.now
