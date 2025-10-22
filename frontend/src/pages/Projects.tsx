@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Calendar, DollarSign } from "lucide-react";
+import { formatCurrencyINR } from '@/lib/utils';
 
 const Projects = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,8 +94,8 @@ const Projects = () => {
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <CardTitle className="line-clamp-1">{project.title}</CardTitle>
-                        <CardDescription className="line-clamp-2">
+                        <CardTitle className="line-clamp-1 truncate">{project.title}</CardTitle>
+                        <CardDescription className="line-clamp-2 truncate">
                           {project.description}
                         </CardDescription>
                       </div>
@@ -135,7 +136,7 @@ const Projects = () => {
                       </div>
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <DollarSign className="h-4 w-4" />
-                        <span>${(project.price ?? 0).toLocaleString()}</span>
+                        <span>{formatCurrencyINR(project.price ?? 0)}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -201,7 +202,7 @@ function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
         <label className="text-sm font-medium">Price (optional)</label>
         <div className="flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <Input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Amount in USD" />
+          <Input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Amount in INR" />
         </div>
       </div>
       <DialogFooter>

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { ArrowLeft, Plus, Search, MoreHorizontal, Upload, FileText, Image as ImageIcon, Download, Trash } from "lucide-react";
 import { API_BASE } from '@/lib/api';
+import { formatCurrencyINR } from '@/lib/utils';
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -45,6 +46,8 @@ const ProjectDetail = () => {
     const path = rel.replace(/^\/+/, '');
     return `${base}/${path}`;
   };
+  // use shared INR formatter
+  const formatCurrency = formatCurrencyINR;
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -271,7 +274,7 @@ const ProjectDetail = () => {
             </div>
             <div>
               <p className="mb-1 text-sm text-muted-foreground">Budget</p>
-              <p className="font-medium">${(project?.price ?? 0).toLocaleString()}</p>
+              <p className="font-medium">{formatCurrency(project?.price ?? 0)}</p>
             </div>
             <div>
               <p className="mb-1 text-sm text-muted-foreground">Status</p>
@@ -416,8 +419,8 @@ const ProjectDetail = () => {
             <Card className="border-border">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[100px] p-4 align-middle [&:has([role=checkbox])]:pr-0">Task</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="w-[280px] p-4 align-middle [&:has([role=checkbox])]:pr-0">Task</TableHead>
                     <TableHead className="p-4 align-middle [&:has([role=checkbox])]:pr-0">Status</TableHead>
                     <TableHead className="p-4 align-middle [&:has([role=checkbox])]:pr-0">Priority</TableHead>
                     <TableHead className="p-4 align-middle [&:has([role=checkbox])]:pr-0">Due Date</TableHead>
@@ -431,7 +434,7 @@ const ProjectDetail = () => {
                       className="border-b transition-colors data-[state=selected]:bg-muted hover:bg-muted/50 cursor-pointer"
                       onClick={() => { setSelectedTask(task); setDetailOpen(true); }}
                     >
-                      <TableCell className="p-4 align-middle [&:has([role=checkbox])]:pr-0 font-mono text-sm flex items-center gap-2">
+                      <TableCell className="p-4 align-middle [&:has([role=checkbox])]:pr-0 font-mono text-sm flex items-center gap-2 min-w-0 w-[280px]">
                         <button
                           title={task.status === 'Done' ? 'Mark In Progress' : 'Mark Done'}
                           onClick={async (e) => {
@@ -444,10 +447,10 @@ const ProjectDetail = () => {
                           }}
                           className={`h-5 w-5 rounded-full border flex items-center justify-center ${task.status === 'Done' ? 'bg-green-500' : 'bg-yellow-400'}`}
                         />
-                        <div className="flex flex-col">
+                        <div className="flex flex-col min-w-0">
                           <button className="text-left" onClick={() => { setSelectedTask(task); setDetailOpen(true); }}>
-                            <span className="font-medium">{task.title}</span>
-                            <div className="text-xs text-muted-foreground line-clamp-1">{task.description}</div>
+                            <span className="font-medium block truncate">{task.title}</span>
+                            <div className="text-xs text-muted-foreground truncate">{task.description}</div>
                           </button>
                         </div>
                       </TableCell>
