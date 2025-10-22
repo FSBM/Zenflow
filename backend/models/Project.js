@@ -12,6 +12,23 @@ const projectSchema = new mongoose.Schema({
     trim: true,
     maxLength: [1000, 'Description cannot exceed 1000 characters']
   },
+  // Optional timeline and budget fields used by the frontend
+  startDate: {
+    type: Date,
+  },
+  endDate: {
+    type: Date,
+  },
+  price: {
+    type: Number,
+    default: 0
+  },
+  // Project status: ongoing, completed, on-hold, cancelled
+  status: {
+    type: String,
+    enum: ['ongoing', 'completed', 'on-hold', 'cancelled'],
+    default: 'ongoing'
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -20,6 +37,15 @@ const projectSchema = new mongoose.Schema({
   members: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  }],
+  // Attached files for this project (stored on disk under /uploads)
+  files: [{
+    filename: String,
+    originalName: String,
+    url: String,
+    mimeType: String,
+    size: Number,
+    uploadedAt: { type: Date, default: Date.now }
   }],
   createdAt: {
     type: Date,

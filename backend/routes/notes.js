@@ -40,11 +40,11 @@ router.post('/projects/:projectId/notes', auth, [
       });
     }
 
-    const { body } = req.body;
+    const { body: noteBody } = req.body;
 
     const note = new Note({
       project: req.params.projectId,
-      body,
+      body: noteBody,
       createdBy: req.user._id
     });
 
@@ -59,7 +59,8 @@ router.post('/projects/:projectId/notes', auth, [
   } catch (error) {
     console.error('Create note error:', error);
     res.status(500).json({
-      message: 'Server error while creating note'
+      message: 'Server error while creating note',
+      ...(process.env.NODE_ENV === 'development' ? { error: error.message } : {})
     });
   }
 });
@@ -93,7 +94,8 @@ router.get('/projects/:projectId/notes', auth, async (req, res) => {
   } catch (error) {
     console.error('Get notes error:', error);
     res.status(500).json({
-      message: 'Server error while fetching notes'
+      message: 'Server error while fetching notes',
+      ...(process.env.NODE_ENV === 'development' ? { error: error.message } : {})
     });
   }
 });
@@ -143,7 +145,8 @@ router.delete('/notes/:id', auth, async (req, res) => {
   } catch (error) {
     console.error('Delete note error:', error);
     res.status(500).json({
-      message: 'Server error while deleting note'
+      message: 'Server error while deleting note',
+      ...(process.env.NODE_ENV === 'development' ? { error: error.message } : {})
     });
   }
 });

@@ -2,22 +2,24 @@
 
 # Project Management App - Development Setup Script
 
-echo "🚀 Starting Minimal Project Management App"
-echo "========================================="
+echo "🚀 Starting Project Management App with MongoDB Atlas"
+echo "=================================================="
 
-# Check if MongoDB is running
-if ! pgrep -x "mongod" > /dev/null; then
-    echo "⚠️  MongoDB is not running!"
-    echo ""
-    echo "To start MongoDB:"
-    echo "  macOS (with Homebrew): brew services start mongodb-community"
-    echo "  Linux: sudo systemctl start mongod"
-    echo "  Windows: net start MongoDB"
-    echo ""
-    echo "Or use MongoDB Atlas (cloud):"
-    echo "  1. Create account at https://www.mongodb.com/atlas"
-    echo "  2. Get connection string"
-    echo "  3. Update MONGODB_URI in backend/.env"
+# Function to check if a port is in use
+check_port() {
+    local port=$1
+    local service=$2
+    if lsof -i :$port > /dev/null 2>&1; then
+        echo "✅ $service is running on port $port"
+        return 0
+    else
+        echo "❌ Port $port is not in use"
+        return 1
+    fi
+}
+
+echo ""
+echo "📊 Checking current services..."
     echo ""
     exit 1
 fi

@@ -59,16 +59,12 @@ router.post('/register', [
 
     // Generate token
     const token = generateToken(user._id);
+    const { serializeDoc } = require('../utils/serializer');
 
     res.status(201).json({
       message: 'User registered successfully',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt
-      }
+      user: serializeDoc(user)
     });
 
   } catch (error) {
@@ -121,16 +117,12 @@ router.post('/login', [
 
     // Generate token
     const token = generateToken(user._id);
+    const { serializeDoc } = require('../utils/serializer');
 
     res.json({
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt
-      }
+      user: serializeDoc(user)
     });
 
   } catch (error) {

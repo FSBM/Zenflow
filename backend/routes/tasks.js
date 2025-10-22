@@ -3,6 +3,7 @@ const { body, validationResult, query } = require('express-validator');
 const auth = require('../middleware/auth');
 const Task = require('../models/Task');
 const Project = require('../models/Project');
+const mongoose = require('mongoose');
 
 const router = express.Router();
 
@@ -72,7 +73,25 @@ router.get('/projects/:projectId/tasks', auth, [
       .populate('assignees', 'name email')
       .sort({ createdAt: -1 });
 
-    res.json(tasks);
+    // Convert internal status/priority to UI strings
+    const { serializeMany } = require('../utils/serializer');
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = { 'low': 'Low', 'medium': 'Medium', 'high': 'High' };
+
+    const mapped = tasks.map(t => {
+      const obj = t.toObject();
+      obj.status = statusMap[obj.status] || obj.status;
+      obj.priority = priorityMap[obj.priority] || obj.priority;
+      return obj;
+    });
+
+    res.json(serializeMany(mapped));
 
   } catch (error) {
     console.error('Get tasks error:', error);
@@ -103,6 +122,14 @@ router.post('/projects/:projectId/tasks', auth, [
     .optional()
     .isIn(['low', 'medium', 'high'])
     .withMessage('Invalid priority'),
+  body('assignees')
+    .optional()
+    .isArray()
+    .withMessage('Assignees must be an array of user ids'),
+  body('assignees')
+    .optional()
+    .isArray()
+    .withMessage('Assignees must be an array of user ids'),
   body('startDate')
     .optional()
     .isISO8601()
@@ -141,7 +168,25 @@ router.post('/projects/:projectId/tasks', auth, [
       });
     }
 
-    const { title, description, status, priority, startDate, dueDate, price } = req.body;
+    const { title, description, status, priority, startDate, dueDate, price, assignees } = req.body;
+
+    // If assignees provided, validate they are valid ObjectId strings and members of the project
+    if (assignees !== undefined) {
+      if (!Array.isArray(assignees)) {
+        return res.status(400).json({ message: 'Assignees must be an array' });
+      }
+      // ensure each id is a valid ObjectId
+      for (const a of assignees) {
+        if (!mongoose.Types.ObjectId.isValid(String(a))) {
+          return res.status(400).json({ message: `Invalid assignee id: ${a}` });
+        }
+        const aid = String(a);
+        const isMember = (project.owner && String(project.owner) === aid) || (Array.isArray(project.members) && project.members.map(m => String(m)).includes(aid));
+        if (!isMember) {
+          return res.status(400).json({ message: `Assignee ${a} is not a member of this project` });
+        }
+      }
+    }
 
     const task = new Task({
       project: req.params.projectId,
@@ -153,16 +198,33 @@ router.post('/projects/:projectId/tasks', auth, [
       dueDate: dueDate ? new Date(dueDate) : undefined,
       price: price || 0,
       createdBy: req.user._id,
-      assignees: [req.user._id] // Assign to creator by default
+      assignees: Array.isArray(assignees) && assignees.length > 0 ? assignees : [req.user._id]
     });
 
     await task.save();
     await task.populate('createdBy', 'name email');
     await task.populate('assignees', 'name email');
 
+    // Map to UI-friendly values
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = {
+      'low': 'Low',
+      'medium': 'Medium',
+      'high': 'High'
+    };
+    const taskObj = task.toObject();
+    taskObj.status = statusMap[taskObj.status] || taskObj.status;
+    taskObj.priority = priorityMap[taskObj.priority] || taskObj.priority;
+
     res.status(201).json({
       message: 'Task created successfully',
-      task
+      task: taskObj
     });
 
   } catch (error) {
@@ -241,12 +303,13 @@ router.patch('/tasks/:id', auth, [
       });
     }
 
-    const { title, description, status, priority, startDate, dueDate, price } = req.body;
+  const { title, description, status, priority, startDate, dueDate, price, assignees } = req.body;
 
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
     if (status !== undefined) task.status = status;
-    if (priority !== undefined) task.priority = priority;
+  if (priority !== undefined) task.priority = priority;
+  if (assignees !== undefined && Array.isArray(assignees)) task.assignees = assignees;
     if (startDate !== undefined) task.startDate = startDate ? new Date(startDate) : null;
     if (dueDate !== undefined) task.dueDate = dueDate ? new Date(dueDate) : null;
     if (price !== undefined) task.price = price;
@@ -255,9 +318,25 @@ router.patch('/tasks/:id', auth, [
     await task.populate('createdBy', 'name email');
     await task.populate('assignees', 'name email');
 
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = {
+      'low': 'Low',
+      'medium': 'Medium',
+      'high': 'High'
+    };
+    const taskObj = task.toObject();
+    taskObj.status = statusMap[taskObj.status] || taskObj.status;
+    taskObj.priority = priorityMap[taskObj.priority] || taskObj.priority;
+
     res.json({
       message: 'Task updated successfully',
-      task
+      task: taskObj
     });
 
   } catch (error) {
@@ -311,3 +390,39 @@ router.delete('/tasks/:id', auth, async (req, res) => {
 });
 
 module.exports = router;
+
+// Added route to get tasks assigned to current user across projects
+// GET /api/tasks/assigned
+// Private
+router.get('/tasks/assigned', auth, async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignees: req.user._id })
+      .populate('project', 'title')
+      .populate('createdBy', 'name email')
+      .populate('assignees', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = { 'low': 'Low', 'medium': 'Medium', 'high': 'High' };
+
+    const mapped = tasks.map(t => {
+      const obj = t.toObject();
+      obj.status = statusMap[obj.status] || obj.status;
+      obj.priority = priorityMap[obj.priority] || obj.priority;
+      return obj;
+    });
+
+    const { serializeMany } = require('../utils/serializer');
+    res.json(serializeMany(mapped));
+  } catch (err) {
+    console.error('Get assigned tasks error:', err);
+    res.status(500).json({ message: 'Server error while fetching assigned tasks' });
+  }
+});
