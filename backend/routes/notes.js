@@ -40,11 +40,11 @@ router.post('/projects/:projectId/notes', auth, [
       });
     }
 
-    const { body } = req.body;
+    const { body: noteBody } = req.body;
 
     const note = new Note({
       project: req.params.projectId,
-      body,
+      body: noteBody,
       createdBy: req.user._id
     });
 

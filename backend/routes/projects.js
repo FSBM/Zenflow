@@ -110,18 +110,17 @@ router.get('/:id', auth, async (req, res) => {
       });
     }
 
-    // Get tasks for this project
-    let tasks = await Task.find({ project: project._1 })
-      .populate('createdBy', 'name email')
-      .populate('assignees', 'name email')
-      .sort({ createdAt: -1 });
-
-    // Fix: fall back to correct query if above fails
-    if (!tasks || tasks.length === 0) {
-      tasks = await Task.find({ project: project._id })
+    // Get tasks for this project (defensive: ensure we query using a valid id)
+    const projectId = project && project._id ? project._id : null;
+    let tasks = [];
+    if (projectId) {
+      tasks = await Task.find({ project: projectId })
         .populate('createdBy', 'name email')
         .populate('assignees', 'name email')
         .sort({ createdAt: -1 });
+    } else {
+      // Shouldn't happen because we validated project existence above, but guard anyway
+      tasks = [];
     }
 
     // Map statuses/priorities to UI-friendly labels
