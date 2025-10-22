@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Sidebar = ({ projects = [], onCreateProject }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -27,41 +28,33 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
   };
 
   const SidebarContent = () => (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-sidebar border-r border-sidebar-border">
       {/* Header */}
       <div className="p-4">
         <div className="flex items-center justify-between">
-          <h2 className={`font-semibold text-notion-text ${isCollapsed ? 'hidden' : 'block'}`}>
+          <h2 className={`font-semibold text-sidebar-foreground ${isCollapsed ? 'hidden' : 'block'}`}>
             Projects
           </h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex h-8 w-8"
+            className="hidden lg:flex h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
             {isCollapsed ? <Menu size={18} /> : <X size={18} />}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMobileOpen(false)}
-            className="lg:hidden h-8 w-8"
-          >
-            <X size={18} />
-          </Button>
         </div>
       </div>
-      <Separator />
+      <Separator className="bg-sidebar-border" />
 
       {/* User Info */}
       <div className={`p-4 ${isCollapsed ? 'hidden' : 'block'}`}>
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
+          <div className="w-8 h-8 bg-sidebar-primary text-sidebar-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
               {user?.name || 'User'}
             </p>
             <p className="text-xs text-muted-foreground truncate">
@@ -70,7 +63,7 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
           </div>
         </div>
       </div>
-      <Separator />
+      <Separator className="bg-sidebar-border" />
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto">
@@ -80,8 +73,8 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
             to="/dashboard"
             className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
               location.pathname === '/dashboard'
-                ? 'bg-notion-accent/10 text-notion-accent'
-                : 'text-notion-text-muted hover:text-notion-text hover:bg-notion-surface'
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
             }`}
           >
             <FolderOpen size={18} />
@@ -92,7 +85,7 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
           <Button
             variant="ghost"
             onClick={onCreateProject}
-            className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-accent w-full ${
+            className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 w-full ${
               isCollapsed ? 'justify-center' : 'justify-start'
             }`}
           >
@@ -104,7 +97,7 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
         {/* Projects List */}
         {!isCollapsed && projects.length > 0 && (
           <div className="px-4 pb-4">
-            <h3 className="text-xs font-medium text-notion-text-muted uppercase tracking-wide mb-3">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Recent Projects
             </h3>
             <div className="space-y-1">
@@ -114,8 +107,8 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
                   to={`/project/${project._id}`}
                   className={`block px-3 py-2 rounded-md transition-colors ${
                     location.pathname === `/project/${project._id}`
-                      ? 'bg-notion-accent/10 text-notion-accent'
-                      : 'text-notion-text-muted hover:text-notion-text hover:bg-notion-surface'
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
                   }`}
                 >
                   <p className="text-sm truncate">{project.title}</p>
@@ -126,25 +119,29 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
         )}
       </div>
 
-      <Separator />
+      <Separator className="bg-sidebar-border" />
       {/* Footer */}
       <div className="p-4">
         <div className="space-y-2">
-          <button className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-notion-text-muted hover:text-notion-text hover:bg-notion-surface w-full ${
-            isCollapsed ? 'justify-center' : 'justify-start'
-          }`}>
+          <Button
+            variant="ghost"
+            className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 w-full ${
+              isCollapsed ? 'justify-center' : 'justify-start'
+            }`}
+          >
             <Settings size={18} />
             {!isCollapsed && <span>Settings</span>}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={handleLogout}
-            className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-notion-text-muted hover:text-red-400 hover:bg-red-500/10 w-full ${
+            className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full ${
               isCollapsed ? 'justify-center' : 'justify-start'
             }`}
           >
             <LogOut size={18} />
             {!isCollapsed && <span>Sign out</span>}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -153,30 +150,28 @@ const Sidebar = ({ projects = [], onCreateProject }) => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className={`hidden lg:flex flex-col notion-sidebar ${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-200`}>
+      <div className={`hidden lg:flex flex-col ${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-200`}>
         <SidebarContent />
       </div>
 
       {/* Mobile Sidebar */}
-      {isMobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div 
-            className="fixed inset-0 bg-black/50" 
-            onClick={() => setIsMobileOpen(false)}
-          />
-          <div className="relative flex flex-col w-64 notion-sidebar">
-            <SidebarContent />
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 notion-button-secondary p-2"
-      >
-        <Menu size={20} />
-      </button>
+      <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden fixed top-4 left-4 z-40 bg-sidebar border border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent"
+          >
+            <Menu size={20} />
+          </Button>
+        </SheetTrigger>
+        <SheetContent 
+          side="left" 
+          className="w-64 p-0 bg-sidebar border-sidebar-border"
+        >
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
     </>
   );
 };
