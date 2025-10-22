@@ -61,21 +61,60 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
-    
-    // Start server
-    const PORT = process.env.PORT || 5000;
+// Database connection with fallback support
+async function connectAndStart() {
+  const primaryUri = process.env.MONGODB_URI;
+  const fallbackUri = process.env.MONGODB_URI_LOCAL;
+  const PORT = process.env.PORT || 5000;
+
+  const tryConnect = async (uri) => {
+    if (!uri) return Promise.reject(new Error('No URI provided'));
+    return mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
+  };
+
+  try {
+    if (primaryUri) {
+      console.log('\u23F3 Attempting to connect to primary MongoDB URI...');
+      await tryConnect(primaryUri);
+      console.log('\u2705 Connected to MongoDB (primary)');
+    } else if (fallbackUri) {
+      console.log('\u23F3 No primary URI set; attempting local MongoDB...');
+      await tryConnect(fallbackUri);
+      console.log('\u2705 Connected to MongoDB (local fallback)');
+    } else {
+      throw new Error('No MongoDB URI configured (set MONGODB_URI or MONGODB_URI_LOCAL)');
+    }
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
     });
-  })
-  .catch((error) => {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  });
+  } catch (error) {
+    console.error('\u274c MongoDB connection error:', error.message || error);
+    // If primary failed and fallback exists, try fallback
+    if (primaryUri && fallbackUri) {
+      try {
+        console.log('\u23F3 Primary failed, attempting fallback MongoDB URI...');
+        await tryConnect(fallbackUri);
+        console.log('\u2705 Connected to MongoDB (fallback)');
+        app.listen(PORT, () => {
+          console.log(`🚀 Server running on port ${PORT}`);
+          console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+        });
+        return;
+      } catch (err2) {
+        console.error('\u274c Fallback MongoDB connection also failed:', err2.message || err2);
+      }
+    }
+
+    console.error('\nHelpful tips:');
+    console.error('- If you are using MongoDB Atlas, make sure your current IP is added to the Project Network Access IP whitelist (or add 0.0.0.0/0 for development)');
+    console.error('- Confirm the username/password in your MONGODB_URI are correct and the user has access to the cluster');
+    console.error('- If you prefer to run locally, install and start MongoDB and set MONGODB_URI_LOCAL=mongodb://localhost:27017/project_management');
+    // Keep nodemon alive so developer can edit files; do not exit the process forcibly
+  }
+}
+
+connectAndStart();
 
 module.exports = app;

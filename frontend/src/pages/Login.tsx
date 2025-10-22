@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FolderKanban } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { request } from '@/lib/api';
+import { setToken, setUser } from '@/lib/auth';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,31 +21,43 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const res = await request('/api/auth/login', { method: 'POST', body: loginData });
+      if (res?.token) {
+        setToken(res.token);
+        setUser(res.user);
+        toast({ title: 'Login successful', description: res.message || 'Welcome back!' });
+        navigate('/home');
+      } else {
+        toast({ title: 'Login failed', description: 'Invalid response from server' });
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: 'Login failed', description: err?.details?.message || err?.message || 'Unknown error' });
+    } finally {
       setIsLoading(false);
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      navigate("/home");
-    }, 1000);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const res = await request('/api/auth/register', { method: 'POST', body: registerData });
+      if (res?.token) {
+        setToken(res.token);
+        setUser(res.user);
+        toast({ title: 'Account created', description: res.message || 'Your account has been created' });
+        navigate('/home');
+      } else {
+        toast({ title: 'Registration failed', description: 'Invalid response from server' });
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: 'Registration failed', description: err?.details?.message || err?.message || 'Unknown error' });
+    } finally {
       setIsLoading(false);
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully!",
-      });
-      navigate("/home");
-    }, 1000);
+    }
   };
 
   return (

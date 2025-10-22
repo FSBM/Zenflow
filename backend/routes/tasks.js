@@ -72,7 +72,25 @@ router.get('/projects/:projectId/tasks', auth, [
       .populate('assignees', 'name email')
       .sort({ createdAt: -1 });
 
-    res.json(tasks);
+    // Convert internal status/priority to UI strings
+    const { serializeMany } = require('../utils/serializer');
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = { 'low': 'Low', 'medium': 'Medium', 'high': 'High' };
+
+    const mapped = tasks.map(t => {
+      const obj = t.toObject();
+      obj.status = statusMap[obj.status] || obj.status;
+      obj.priority = priorityMap[obj.priority] || obj.priority;
+      return obj;
+    });
+
+    res.json(serializeMany(mapped));
 
   } catch (error) {
     console.error('Get tasks error:', error);
@@ -160,9 +178,26 @@ router.post('/projects/:projectId/tasks', auth, [
     await task.populate('createdBy', 'name email');
     await task.populate('assignees', 'name email');
 
+    // Map to UI-friendly values
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = {
+      'low': 'Low',
+      'medium': 'Medium',
+      'high': 'High'
+    };
+    const taskObj = task.toObject();
+    taskObj.status = statusMap[taskObj.status] || taskObj.status;
+    taskObj.priority = priorityMap[taskObj.priority] || taskObj.priority;
+
     res.status(201).json({
       message: 'Task created successfully',
-      task
+      task: taskObj
     });
 
   } catch (error) {
@@ -255,9 +290,25 @@ router.patch('/tasks/:id', auth, [
     await task.populate('createdBy', 'name email');
     await task.populate('assignees', 'name email');
 
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = {
+      'low': 'Low',
+      'medium': 'Medium',
+      'high': 'High'
+    };
+    const taskObj = task.toObject();
+    taskObj.status = statusMap[taskObj.status] || taskObj.status;
+    taskObj.priority = priorityMap[taskObj.priority] || taskObj.priority;
+
     res.json({
       message: 'Task updated successfully',
-      task
+      task: taskObj
     });
 
   } catch (error) {

@@ -22,7 +22,15 @@ router.get('/', auth, async (req, res) => {
     .populate('members', 'name email')
     .sort({ updatedAt: -1 });
 
-    res.json(projects);
+    const { serializeMany, serializeDoc } = require('../utils/serializer');
+
+    const mapped = projects.map(p => {
+      const obj = serializeDoc(p);
+      // add task counts
+      return obj;
+    });
+
+    res.json(mapped);
   } catch (error) {
     console.error('Get projects error:', error);
     res.status(500).json({
@@ -103,20 +111,47 @@ router.get('/:id', auth, async (req, res) => {
     }
 
     // Get tasks for this project
-    const tasks = await Task.find({ project: project._id })
+    let tasks = await Task.find({ project: project._1 })
       .populate('createdBy', 'name email')
       .populate('assignees', 'name email')
       .sort({ createdAt: -1 });
+
+    // Fix: fall back to correct query if above fails
+    if (!tasks || tasks.length === 0) {
+      tasks = await Task.find({ project: project._id })
+        .populate('createdBy', 'name email')
+        .populate('assignees', 'name email')
+        .sort({ createdAt: -1 });
+    }
+
+    // Map statuses/priorities to UI-friendly labels
+    const statusMap = {
+      'backlog': 'Backlog',
+      'todo': 'Todo',
+      'in-progress': 'In Progress',
+      'done': 'Done',
+      'canceled': 'Canceled'
+    };
+    const priorityMap = { 'low': 'Low', 'medium': 'Medium', 'high': 'High' };
+
+    const mappedTasks = tasks.map(t => {
+      const obj = t.toObject();
+      obj.status = statusMap[obj.status] || obj.status;
+      obj.priority = priorityMap[obj.priority] || obj.priority;
+      return obj;
+    });
 
     // Get notes for this project
     const notes = await Note.find({ project: project._id })
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 });
 
+    const { serializeDoc, serializeMany } = require('../utils/serializer');
+
     res.json({
-      project,
-      tasks,
-      notes
+      project: serializeDoc(project),
+      tasks: serializeMany(mappedTasks),
+      notes: serializeMany(notes)
     });
 
   } catch (error) {

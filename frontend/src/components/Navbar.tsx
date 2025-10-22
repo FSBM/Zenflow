@@ -51,6 +51,11 @@ const Navbar = () => {
               size="icon"
               onClick={() => {
                 // Handle logout
+                try {
+                  // Clear local auth and go to login
+                  localStorage.removeItem('auth_token');
+                  localStorage.removeItem('auth_user');
+                } catch (e) {}
                 window.location.href = "/login";
               }}
               className="hidden md:flex"

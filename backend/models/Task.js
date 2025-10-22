@@ -20,8 +20,8 @@ const taskSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: {
-      values: ['todo', 'in-progress', 'done'],
-      message: 'Status must be one of: todo, in-progress, done'
+      values: ['backlog', 'todo', 'in-progress', 'done', 'canceled'],
+      message: 'Status must be one of: backlog, todo, in-progress, done, canceled'
     },
     default: 'todo'
   },
@@ -98,3 +98,4 @@ taskSchema.pre('save', function(next) {
 });
 
 module.exports = mongoose.model('Task', taskSchema);
+

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { projects as apiProjects, tasks as apiTasks, notes as apiNotes } from '@/lib/api';
 import Navbar from "@/components/Navbar";
 import StatusBadge from "@/components/StatusBadge";
 import PriorityBadge from "@/components/PriorityBadge";
@@ -30,75 +31,43 @@ type Status = "Backlog" | "Todo" | "In Progress" | "Done" | "Canceled";
 type Priority = "High" | "Medium" | "Low";
 
 const ProjectDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
-  // Mock project data
-  const project = {
-    id,
-    title: "Website Redesign",
-    description: "Complete overhaul of company website with modern design",
-    startDate: "2024-01-15",
-    endDate: "2024-03-30",
-    price: 15000,
-    notes: "This project focuses on creating a modern, responsive website that improves user experience and showcases our brand identity.",
-  };
+  const [project, setProject] = useState<any>(null);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [files, setFiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [notesText, setNotesText] = useState('');
 
-  // Mock tasks data
-  const tasks = [
-    {
-      id: "TASK-8782",
-      title: "Documentation",
-      description: "You can't compress the program without quantifying the open-source SSD...",
-      status: "In Progress" as Status,
-      priority: "Medium" as Priority,
-      dueDate: "2024-03-15",
-      price: 500,
-    },
-    {
-      id: "TASK-7878",
-      title: "Documentation",
-      description: "Try to calculate the EXE feed, maybe it will index the multi-byte pixel!",
-      status: "Backlog" as Status,
-      priority: "Medium" as Priority,
-      dueDate: "2024-03-20",
-      price: 300,
-    },
-    {
-      id: "TASK-7839",
-      title: "Bug",
-      description: "We need to bypass the neural TCP card!",
-      status: "Todo" as Status,
-      priority: "High" as Priority,
-      dueDate: "2024-03-10",
-      price: 800,
-    },
-    {
-      id: "TASK-5562",
-      title: "Feature",
-      description: "The SAS interface is down, bypass the open-source pixel so we can back up...",
-      status: "Done" as Status,
-      priority: "Medium" as Priority,
-      dueDate: "2024-03-05",
-      price: 600,
-    },
-  ];
-
-  // Mock files data
-  const files = [
-    { id: "1", name: "Design_Mockups_v2.pdf", type: "pdf", size: "2.4 MB", uploadedAt: "2024-01-20" },
-    { id: "2", name: "Brand_Guidelines.pdf", type: "pdf", size: "1.8 MB", uploadedAt: "2024-01-18" },
-    { id: "3", name: "hero_image.png", type: "image", size: "854 KB", uploadedAt: "2024-02-01" },
-  ];
+  useEffect(() => {
+    const load = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const res = await apiProjects.get(id);
+        const projectData = (res && typeof res === 'object' && 'project' in (res as any)) ? (res as any).project : null;
+        const tasksData = (res && typeof res === 'object' && 'tasks' in (res as any)) ? (res as any).tasks : [];
+        setProject(projectData ?? null);
+        setTasks(Array.isArray(tasksData) ? tasksData : []);
+        setNotesText(projectData && typeof projectData === 'object' && 'notes' in projectData ? String((projectData as any).notes ?? '') : '');
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [id]);
 
   const filteredTasks = tasks.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
-    const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+    const title = String(task.title ?? '').toLowerCase();
+    const desc = String(task.description ?? '').toLowerCase();
+    const matchesSearch = title.includes(searchQuery.toLowerCase()) || desc.includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || String(task.status) === statusFilter;
+    const matchesPriority = priorityFilter === "all" || String(task.priority) === priorityFilter;
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
@@ -115,8 +84,8 @@ const ProjectDetail = () => {
               Back to Projects
             </Button>
           </Link>
-          <h1 className="mb-2 text-3xl font-bold">{project.title}</h1>
-          <p className="text-muted-foreground">{project.description}</p>
+          <h1 className="mb-2 text-3xl font-bold">{project?.title ?? 'Project'}</h1>
+          <p className="text-muted-foreground">{project?.description ?? ''}</p>
         </div>
 
         {/* Project Summary Card */}
@@ -128,13 +97,12 @@ const ProjectDetail = () => {
             <div>
               <p className="mb-1 text-sm text-muted-foreground">Timeline</p>
               <p className="font-medium">
-                {new Date(project.startDate).toLocaleDateString()} -{" "}
-                {new Date(project.endDate).toLocaleDateString()}
+                {project?.startDate ? new Date(String(project.startDate)).toLocaleDateString() : '—'} - {project?.endDate ? new Date(String(project.endDate)).toLocaleDateString() : '—'}
               </p>
             </div>
             <div>
               <p className="mb-1 text-sm text-muted-foreground">Budget</p>
-              <p className="font-medium">${project.price.toLocaleString()}</p>
+              <p className="font-medium">${(project?.price ?? 0).toLocaleString()}</p>
             </div>
             <div>
               <p className="mb-1 text-sm text-muted-foreground">Tasks</p>
@@ -190,7 +158,18 @@ const ProjectDetail = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button className="gap-2">
+              <Button className="gap-2" onClick={async () => {
+                const title = window.prompt('Task title');
+                if (!title) return;
+                try {
+                  const res = await apiTasks.create(id!, { title });
+                  const taskObj = res && typeof res === 'object' && 'task' in (res as any) ? (res as any).task : null;
+                  if (taskObj) setTasks((t) => [taskObj, ...t]);
+                } catch (err) {
+                  console.error(err);
+                  window.alert('Failed to add task');
+                }
+              }}>
                 <Plus className="h-4 w-4" />
                 Add Task
               </Button>
@@ -231,10 +210,10 @@ const ProjectDetail = () => {
                         <PriorityBadge priority={task.priority} />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {new Date(task.dueDate).toLocaleDateString()}
+                        {task.dueDate ? new Date(String(task.dueDate)).toLocaleDateString() : '—'}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${task.price}
+                        ${task.price ?? 0}
                       </TableCell>
                       <TableCell>
                         <Button variant="ghost" size="icon">
@@ -261,9 +240,22 @@ const ProjectDetail = () => {
                 <Textarea
                   placeholder="Write your notes here..."
                   className="min-h-[300px]"
-                  defaultValue={project.notes}
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
                 />
-                <Button>Save Notes</Button>
+                <div className="flex gap-2">
+                  <Button onClick={async () => {
+                    try {
+                      await apiProjects.update(id!, { description: project?.description });
+                      // Save notes via notes endpoint
+                      await apiNotes.create(id!, notesText);
+                      window.alert('Notes saved');
+                    } catch (err) {
+                      console.error(err);
+                      window.alert('Failed to save notes');
+                    }
+                  }}>Save Notes</Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -305,7 +297,7 @@ const ProjectDetail = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-xs text-muted-foreground">
-                      Uploaded {new Date(file.uploadedAt).toLocaleDateString()}
+                      Uploaded {file.uploadedAt ? new Date(String(file.uploadedAt)).toLocaleDateString() : '—'}
                     </p>
                   </CardContent>
                 </Card>

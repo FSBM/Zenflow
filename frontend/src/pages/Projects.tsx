@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { projects as apiProjects } from '@/lib/api';
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,39 +10,25 @@ import { Plus, Search, Calendar, DollarSign } from "lucide-react";
 const Projects = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock data - replace with actual API calls
-  const projects = [
-    {
-      id: "1",
-      title: "Website Redesign",
-      description: "Complete overhaul of company website with modern design",
-      startDate: "2024-01-15",
-      endDate: "2024-03-30",
-      price: 15000,
-      tasksTotal: 24,
-      tasksCompleted: 18,
-    },
-    {
-      id: "2",
-      title: "Mobile App Development",
-      description: "iOS and Android app for customer engagement",
-      startDate: "2024-02-01",
-      endDate: "2024-06-15",
-      price: 45000,
-      tasksTotal: 56,
-      tasksCompleted: 32,
-    },
-    {
-      id: "3",
-      title: "Database Migration",
-      description: "Migrate legacy database to modern cloud infrastructure",
-      startDate: "2024-03-01",
-      endDate: "2024-04-30",
-      price: 12000,
-      tasksTotal: 18,
-      tasksCompleted: 5,
-    },
-  ];
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await (await import('@/lib/api')).projects.list();
+        setProjects(res || []);
+      } catch (err: any) {
+        console.error(err);
+        setError(err?.message || 'Failed to load projects');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const filteredProjects = projects.filter((project) =>
     project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -59,7 +46,19 @@ const Projects = () => {
             <h1 className="mb-2 text-3xl font-bold">Projects</h1>
             <p className="text-muted-foreground">Manage and track all your projects</p>
           </div>
-          <Button className="gap-2">
+            <Button className="gap-2" onClick={async () => {
+            const title = window.prompt('Project title');
+            if (!title) return;
+            const description = window.prompt('Description (optional)') || '';
+            try {
+              const res = await apiProjects.create({ title, description });
+              // Insert new project at top
+              setProjects((p) => [res.project, ...p]);
+            } catch (err) {
+              console.error(err);
+              window.alert('Failed to create project');
+            }
+          }}>
             <Plus className="h-4 w-4" />
             New Project
           </Button>
@@ -81,9 +80,10 @@ const Projects = () => {
         {/* Projects Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => {
-            const completionPercentage = Math.round(
-              (project.tasksCompleted / project.tasksTotal) * 100
-            );
+            // Defensive defaults for fields that may be missing from server
+            const tasksCompleted = Number(project.tasksCompleted ?? 0);
+            const tasksTotal = Number(project.tasksTotal ?? 0) || 0;
+            const completionPercentage = tasksTotal > 0 ? Math.round((tasksCompleted / tasksTotal) * 100) : 0;
 
             return (
               <Link key={project.id} to={`/projects/${project.id}`}>
@@ -116,11 +116,11 @@ const Projects = () => {
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{new Date(project.endDate).toLocaleDateString()}</span>
+                        <span>{project.endDate ? new Date(project.endDate).toLocaleDateString() : '—'}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <DollarSign className="h-4 w-4" />
-                        <span>${project.price.toLocaleString()}</span>
+                        <span>${(project.price ?? 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </CardContent>
