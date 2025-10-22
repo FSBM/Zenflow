@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FolderKanban, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, FolderKanban, LogOut, Menu, Mail } from "lucide-react";
 import { useState } from "react";
 
 const Navbar = () => {
@@ -12,6 +12,7 @@ const Navbar = () => {
   const navItems = [
     { path: "/home", label: "Dashboard", icon: LayoutDashboard },
     { path: "/projects", label: "Projects", icon: FolderKanban },
+    { path: "/inbox", label: "Inbox", icon: Mail },
   ];
 
   return (

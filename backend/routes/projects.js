@@ -4,6 +4,8 @@ const auth = require('../middleware/auth');
 const Project = require('../models/Project');
 const Task = require('../models/Task');
 const Note = require('../models/Note');
+const Invite = require('../models/Invite');
+const User = require('../models/User');
 
 const router = express.Router();
 
@@ -25,12 +27,26 @@ router.get('/', auth, async (req, res) => {
     const { serializeMany, serializeDoc } = require('../utils/serializer');
 
     const mapped = projects.map(p => {
-      const obj = serializeDoc(p);
-      // add task counts
-      return obj;
+      return p; // we'll transform later with counts (do not call toObject here to avoid duplicate work)
     });
 
-    res.json(mapped);
+    // For each project compute task totals and completed counts to help the UI
+    const results = await Promise.all(mapped.map(async (proj) => {
+      const obj = serializeDoc(proj);
+      try {
+        const total = await Task.countDocuments({ project: proj._id });
+        const completed = await Task.countDocuments({ project: proj._id, status: 'done' });
+        obj.tasksTotal = total;
+        obj.tasksCompleted = completed;
+      } catch (err) {
+        // If counting fails for any reason, fall back to zeros
+        obj.tasksTotal = obj.tasksTotal ?? 0;
+        obj.tasksCompleted = obj.tasksCompleted ?? 0;
+      }
+      return obj;
+    }));
+
+    res.json(results);
   } catch (error) {
     console.error('Get projects error:', error);
     res.status(500).json({
@@ -64,17 +80,42 @@ router.post('/', auth, [
     }
 
     const { title, description } = req.body;
+    // Optional: price and member emails for invites
+    const price = req.body.price !== undefined ? Number(req.body.price) : undefined;
+    const memberEmails = Array.isArray(req.body.memberEmails) ? req.body.memberEmails : (typeof req.body.memberEmails === 'string' && req.body.memberEmails.trim() ? [req.body.memberEmails.trim()] : []);
+
+    // Validate member emails: they must exist in users collection
+    const normalizedEmails = memberEmails.map(e => String(e || '').toLowerCase().trim()).filter(Boolean);
+    let foundUsers = [];
+    if (normalizedEmails.length > 0) {
+      foundUsers = await User.find({ email: { $in: normalizedEmails } });
+      const foundEmails = foundUsers.map(u => u.email.toLowerCase());
+      const missing = normalizedEmails.filter(e => !foundEmails.includes(e));
+      if (missing.length > 0) {
+        return res.status(400).json({ message: 'Some member emails were not found', missing });
+      }
+    }
 
     const project = new Project({
       title,
       description,
       owner: req.user._id,
-      members: [req.user._id] // Add owner as a member by default
+      members: [req.user._id], // Add owner as a member by default
     });
+    if (!Number.isNaN(price)) project.price = price;
 
     await project.save();
     await project.populate('owner', 'name email');
     await project.populate('members', 'name email');
+
+    // Create invites for found users (excluding owner)
+    for (const u of foundUsers) {
+      if (u._id.toString() === req.user._id.toString()) continue;
+      const existingInvite = await Invite.findOne({ project: project._id, to: u._id, status: 'pending' });
+      if (!existingInvite) {
+        await Invite.create({ project: project._id, from: req.user._id, to: u._id });
+      }
+    }
 
     res.status(201).json({
       message: 'Project created successfully',
@@ -201,6 +242,11 @@ router.patch('/:id', auth, [
     
     if (title !== undefined) project.title = title;
     if (description !== undefined) project.description = description;
+  // allow updating a few optional fields from the UI
+  if (req.body.price !== undefined) project.price = Number(req.body.price);
+  if (req.body.startDate !== undefined) project.startDate = req.body.startDate ? new Date(req.body.startDate) : undefined;
+  if (req.body.endDate !== undefined) project.endDate = req.body.endDate ? new Date(req.body.endDate) : undefined;
+  if (req.body.status !== undefined && ['ongoing','completed','on-hold','cancelled'].includes(req.body.status)) project.status = req.body.status;
 
     await project.save();
     await project.populate('owner', 'name email');
@@ -251,6 +297,36 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(500).json({
       message: 'Server error while deleting project'
     });
+  }
+});
+
+// @route POST /api/projects/:id/invite
+// @desc  Invite a user (by email) to the project (owner only)
+router.post('/:id/invite', auth, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const project = await Project.findOne({ _id: req.params.id, owner: req.user._id });
+    if (!project) return res.status(404).json({ message: 'Project not found or you are not the owner' });
+
+    // find user by email
+    const user = await User.findOne({ email: String(email).toLowerCase().trim() });
+    if (!user) return res.status(404).json({ message: 'User with this email not found' });
+
+    // don't invite owner or existing member
+    if (project.owner.toString() === user._id.toString() || project.members.map(m => m.toString()).includes(user._id.toString())) {
+      return res.status(400).json({ message: 'User is already part of the project' });
+    }
+
+    const existingInvite = await Invite.findOne({ project: project._id, to: user._id, status: 'pending' });
+    if (existingInvite) return res.status(400).json({ message: 'Invite already exists' });
+
+    const invite = await Invite.create({ project: project._id, from: req.user._id, to: user._id });
+    res.status(201).json({ message: 'Invite created', invite });
+  } catch (err) {
+    console.error('Create invite error', err);
+    res.status(500).json({ message: 'Server error while creating invite' });
   }
 });
 

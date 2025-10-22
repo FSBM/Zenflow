@@ -13,6 +13,7 @@ const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
 const noteRoutes = require('./routes/notes');
 const uploadRoutes = require('./routes/uploads');
+const inviteRoutes = require('./routes/invites');
 
 // Create Express app
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api', taskRoutes); // Mount at /api to handle both project tasks and individual task operations
 app.use('/api', noteRoutes); // Mount at /api to handle both project notes and individual note operations
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/invites', inviteRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

@@ -22,18 +22,35 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await request('/api/auth/login', { method: 'POST', body: loginData });
-      if (res?.token) {
-        setToken(res.token);
-        setUser(res.user);
-        toast({ title: 'Login successful', description: res.message || 'Welcome back!' });
+      // basic client-side validation to avoid obvious 400s
+      if (!loginData.email || !loginData.password) {
+        toast({ title: 'Validation', description: 'Email and password are required' });
+        setIsLoading(false);
+        return;
+      }
+
+      const resAny = await request('/api/auth/login', { method: 'POST', body: loginData }) as any;
+      if (resAny?.token) {
+        setToken(resAny.token);
+        setUser(resAny.user);
+        toast({ title: 'Login successful', description: resAny.message || 'Welcome back!' });
         navigate('/home');
       } else {
         toast({ title: 'Login failed', description: 'Invalid response from server' });
       }
     } catch (err: any) {
       console.error(err);
-      toast({ title: 'Login failed', description: err?.details?.message || err?.message || 'Unknown error' });
+      // Try to extract detailed validation errors from the API error payload
+      const details = err?.details;
+      let desc = err?.message || 'Unknown error';
+      if (details) {
+        if (typeof details === 'string') desc = details;
+        else if (details.message) desc = details.message;
+        else if (Array.isArray(details.errors) && details.errors.length > 0) {
+          desc = details.errors.map((d: any) => d.msg || d.message).join('; ');
+        }
+      }
+      toast({ title: 'Login failed', description: desc });
     } finally {
       setIsLoading(false);
     }
@@ -43,11 +60,11 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await request('/api/auth/register', { method: 'POST', body: registerData });
-      if (res?.token) {
-        setToken(res.token);
-        setUser(res.user);
-        toast({ title: 'Account created', description: res.message || 'Your account has been created' });
+      const resAny = await request('/api/auth/register', { method: 'POST', body: registerData }) as any;
+      if (resAny?.token) {
+        setToken(resAny.token);
+        setUser(resAny.user);
+        toast({ title: 'Account created', description: resAny.message || 'Your account has been created' });
         navigate('/home');
       } else {
         toast({ title: 'Registration failed', description: 'Invalid response from server' });

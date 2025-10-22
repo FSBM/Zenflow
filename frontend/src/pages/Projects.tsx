@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import { projects as apiProjects } from '@/lib/api';
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import StatusBadge from '@/components/StatusBadge';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Calendar, DollarSign } from "lucide-react";
 
 const Projects = () => {
@@ -46,22 +49,21 @@ const Projects = () => {
             <h1 className="mb-2 text-3xl font-bold">Projects</h1>
             <p className="text-muted-foreground">Manage and track all your projects</p>
           </div>
-            <Button className="gap-2" onClick={async () => {
-            const title = window.prompt('Project title');
-            if (!title) return;
-            const description = window.prompt('Description (optional)') || '';
-            try {
-              const res = await apiProjects.create({ title, description });
-              // Insert new project at top
-              setProjects((p) => [res.project, ...p]);
-            } catch (err) {
-              console.error(err);
-              window.alert('Failed to create project');
-            }
-          }}>
-            <Plus className="h-4 w-4" />
-            New Project
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Project</DialogTitle>
+                <DialogDescription>Provide a title and optional description for the new project.</DialogDescription>
+              </DialogHeader>
+              <ProjectCreateForm onCreated={(proj) => setProjects((p) => [proj, ...p])} />
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Search */}
@@ -77,22 +79,35 @@ const Projects = () => {
           </div>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project) => {
+  {/* Projects Grid */}
+  <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {filteredProjects.map((project) => {
             // Defensive defaults for fields that may be missing from server
-            const tasksCompleted = Number(project.tasksCompleted ?? 0);
-            const tasksTotal = Number(project.tasksTotal ?? 0) || 0;
+              const tasksCompleted = Number(project.tasksCompleted ?? 0);
+              const tasksTotal = Number(project.tasksTotal ?? 0) || 0;
             const completionPercentage = tasksTotal > 0 ? Math.round((tasksCompleted / tasksTotal) * 100) : 0;
 
             return (
               <Link key={project.id} to={`/projects/${project.id}`}>
                 <Card className="h-full border-border transition-colors hover:border-primary/50">
                   <CardHeader>
-                    <CardTitle className="line-clamp-1">{project.title}</CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {project.description}
-                    </CardDescription>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <CardTitle className="line-clamp-1">{project.title}</CardTitle>
+                        <CardDescription className="line-clamp-2">
+                          {project.description}
+                        </CardDescription>
+                      </div>
+                      <div>
+                        {/* Project status (map backend status to UI label) */}
+                        <StatusBadge status={
+                          project.status === 'completed' ? 'Done' :
+                          project.status === 'on-hold' ? 'Backlog' :
+                          project.status === 'cancelled' ? 'Canceled' :
+                          project.status === 'ongoing' ? 'In Progress' : 'Todo'
+                        } />
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Progress */}
@@ -141,3 +156,84 @@ const Projects = () => {
 };
 
 export default Projects;
+
+// Small form component inserted here to keep this file self-contained.
+function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [memberEmailInput, setMemberEmailInput] = useState('');
+  const [memberEmails, setMemberEmails] = useState<string[]>([]);
+  const [price, setPrice] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <div>
+      <div className="grid gap-2">
+        <label className="text-sm font-medium">Title</label>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Project title" />
+        <label className="text-sm font-medium">Description</label>
+        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" />
+        <label className="text-sm font-medium">Members (invite by email)</label>
+        <div className="flex items-center gap-2">
+          <Input value={memberEmailInput} onChange={(e) => setMemberEmailInput(e.target.value)} placeholder="Type email and press Add" />
+          <Button variant="outline" onClick={() => {
+            const email = memberEmailInput.trim();
+            if (!email) return;
+            if (memberEmails.includes(email)) {
+              setMemberEmailInput('');
+              return;
+            }
+            setMemberEmails(prev => [...prev, email]);
+            setMemberEmailInput('');
+          }}>Add</Button>
+        </div>
+        {memberEmails.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {memberEmails.map((m) => (
+              <div key={m} className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm">
+                <span>{m}</span>
+                <button onClick={() => setMemberEmails(prev => prev.filter(x => x !== m))} className="text-xs">×</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <label className="text-sm font-medium">Price (optional)</label>
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <Input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Amount in USD" />
+        </div>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button variant="ghost">Cancel</Button>
+        </DialogClose>
+        <Button onClick={async () => {
+          if (!title.trim()) {
+            window.alert('Please provide a title');
+            return;
+          }
+          setLoading(true);
+          try {
+            const payload: any = { title: title.trim(), description: description.trim() };
+            if (memberEmails.length > 0) payload.memberEmails = memberEmails;
+            if (price.trim()) payload.price = Number(price);
+            const res = await apiProjects.create(payload);
+            if (res && (res as any).project) onCreated((res as any).project);
+          } catch (err: any) {
+            console.error(err);
+            // If server returned missing emails, show that to user
+            const details = err?.details;
+            if (details && details.missing) {
+              window.alert(`These emails were not found: ${details.missing.join(', ')}`);
+            } else {
+              window.alert('Failed to create project');
+            }
+          } finally {
+            setLoading(false);
+          }
+        }} disabled={loading}>{loading ? 'Creating...' : 'Create'}</Button>
+      </DialogFooter>
+    </div>
+  );
+}

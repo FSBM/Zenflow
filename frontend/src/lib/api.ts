@@ -116,10 +116,21 @@ export { API_BASE, request, upload };
 // Convenience API helpers tailored to the backend routes used by the UI.
 const projects = {
   list: async (): Promise<Project[]> => request<Project[]>('/api/projects'),
-  create: async (payload: { title: string; description?: string }) => request<{ project: Project }>('/api/projects', { method: 'POST', body: payload }),
+  create: async (payload: { title: string; description?: string; price?: number; memberEmails?: string[] }) => request<{ project: Project }>('/api/projects', { method: 'POST', body: payload }),
   get: async (id: string) => request<{ project: Project; tasks?: unknown[]; notes?: unknown[] }>(`/api/projects/${id}`),
   update: async (id: string, payload: unknown) => request(`/api/projects/${id}`, { method: 'PATCH', body: payload }),
   delete: async (id: string) => request(`/api/projects/${id}`, { method: 'DELETE' }),
+};
+
+const invites = {
+  list: async () => request<{ invites: unknown[] }>('/api/invites'),
+  respond: async (inviteId: string, action: 'accept' | 'decline') => request(`/api/invites/${inviteId}/respond`, { method: 'POST', body: { action } })
+  ,
+  // NOTE: the backend currently does not expose a dedicated invite creation
+  // endpoint for inviting users to an existing project. This helper calls
+  // a conventional endpoint that may need to be implemented on the server:
+  // POST /api/projects/:id/invite { email }
+  create: async (projectId: string, email: string) => request(`/api/projects/${projectId}/invite`, { method: 'POST', body: { email } })
 };
 
 const tasks = {
@@ -135,6 +146,7 @@ const tasks = {
   create: async (projectId: string, payload: unknown) => request(`/api/projects/${projectId}/tasks`, { method: 'POST', body: payload }),
   update: async (taskId: string, payload: unknown) => request(`/api/tasks/${taskId}`, { method: 'PATCH', body: payload }),
   delete: async (taskId: string) => request(`/api/tasks/${taskId}`, { method: 'DELETE' }),
+  assigned: async () => request(`/api/tasks/assigned`),
 };
 
 const notes = {
@@ -147,4 +159,4 @@ const uploads = {
   uploadFile: async (fileFieldName: string, file: File) => upload('/api/uploads', fileFieldName, file),
 };
 
-export { projects, tasks, notes, uploads };
+export { projects, tasks, notes, uploads, invites };
