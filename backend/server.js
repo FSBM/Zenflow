@@ -19,7 +19,34 @@ const inviteRoutes = require('./routes/invites');
 const app = express();
 
 // Middleware
-app.use(cors());
+// Configure CORS with environment-driven allowed origins so production
+// frontends can be explicitly whitelisted and we can enable credentials
+// handling if needed. Set CORS_ORIGIN in your environment to a comma
+// separated list like: https://example.com,https://staging.example.com
+const rawCors = process.env.CORS_ORIGIN || '';
+const allowedOrigins = rawCors.split(',').map(s => s.trim()).filter(Boolean);
+
+app.use((req, res, next) => {
+  // Helpful debug output when investigating CORS issues
+  console.log('Incoming Origin header:', req.headers.origin);
+  next();
+});
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // If no origin (e.g., server-to-server or curl), allow it
+    if (!origin) return callback(null, true);
+    // If no list was provided, allow all origins (preserve previous behavior)
+    if (allowedOrigins.length === 0) return callback(null, true);
+    // Otherwise only allow origins that exactly match the list
+    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+    return callback(new Error('CORS policy: Origin not allowed'));
+  },
+  // If your frontend uses cookies or you want to send credentials, set to true
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
