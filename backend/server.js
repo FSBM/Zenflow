@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs');
 
 // Load environment variables
 dotenv.config();
@@ -56,8 +57,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files for uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files for uploads. Allow configuring the uploads directory via UPLOADS_DIR
+const uploadsPath = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : path.join(__dirname, 'uploads');
+// Ensure the directory exists (helpful on first deploy)
+if (!fs.existsSync(uploadsPath)) {
+  try {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+    console.log('Created uploads directory at', uploadsPath);
+  } catch (err) {
+    console.error('Failed to create uploads directory:', err);
+  }
+}
+app.use('/uploads', express.static(uploadsPath));
 
 // Routes
 app.use('/api/auth', authRoutes);
