@@ -155,12 +155,6 @@ If you'd like, I can:
 Thank you — let me know which follow-up you prefer and I will implement it next.
 
 
-# 🎯 Minimal Project Management App (MERN)
-
-A sleek, Notion-inspired project management application built with the MERN stack, featuring a pure black theme and clean, minimal UI.
-
-## 🌟 Features
-
 ### ✅ Core Features (MVP)
 - **Authentication** - JWT-based login/register system
 - **Project Management** - Create, edit, delete projects
