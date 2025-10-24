@@ -1,207 +1,75 @@
-## Zenflow — Collaborative Project Management SaaS
-
-Zenflow is a lightweight, collaborative project-management SaaS designed for agencies, startups, and small product teams that need an easy, flexible way to plan work, invite collaborators, assign tasks, manage budgets, and share multimedia assets. It focuses on clarity, speed, and real-time collaboration for cross-functional teams.
-
-
-## Table of contents
-
-  - Architecture overview
-  - Backend (APIs, models, auth, file uploads)
-  - Frontend (stack, key pages, state & client)
-  - Data model & persistence
-  - Real-time & collaboration
-  - Security, validation, and hardening
-  - Testing, CI/CD, and observability
-
-
-## Project overview
-
-Zenflow helps teams create projects, invite collaborators, assign tasks, allocate budgets, upload images/videos/documents, and track progress together. It aims to reduce friction for agencies and startups by combining task management, lightweight budgeting, and media asset attachments into a single, collaborative workspace.
-
-Primary users: agency project managers, account managers, product owners, designers, and developers.
-
-Core value: enable rapid collaboration with a minimal learning curve while remaining extensible and secure for production usage.
-
-## Key features
-
-
-## Typical user flows
-
-1. Sign up or sign in (email/password). Project owner creates a new project.
-2. Owner sets a budget and basic metadata, then invites collaborators by email.
-3. Invitees accept the invite and join the project workspace.
-4. Owner or managers create tasks, assign them to team members, attach multimedia, and set statuses and priorities.
-5. Team members update task status, upload deliverables, and communicate via comments.
-
-## Technical approach — in depth
-
-### Architecture overview
-
-Zenflow uses a modern web-stack split into two main components:
-
-
-The repository contains two folders: `backend/` and `frontend/`. The backend exposes RESTful endpoints for auth, projects, tasks, invites, notes, and uploads. The frontend consumes those endpoints via `frontend/src/lib/api.ts`.
-
-### Backend — APIs, models and auth
-
-
-Security considerations built in or recommended:
-
-### Database & data model
-
-MongoDB (Mongoose) stores documents for the primary entities. At a high level:
-
-
-Note: These are high-level shapes. The repository has model files in `backend/models/` for exact schemas — use those as canonical sources when updating code.
-
-### Frontend — stack, pages, and state
-
-
-UX considerations:
-
-### Real-time & collaboration
-
-Planned real-time features:
-
-
-Design approach:
-
-### Security, validation, and hardening
-
-Recommended production hardening:
-
-
-### Testing, CI/CD, and observability
-
-
-## Local setup — run & env
-
-The repository is split into `backend/` and `frontend/` folders. Basic setup (assumes Node.js and npm installed):
-
-1. Backend
-
-  - Copy `backend/.env.development` to `backend/.env` and set values.
-  - Install and run:
-
-    cd backend
-    npm install
-    npm run dev
-
-  Typical env vars (examples) — ensure these are set in `backend/.env`:
-
-  - MONGO_URI=your-mongodb-connection-string
-  - JWT_SECRET=strong_jwt_secret
-  - PORT=5000
-  - CLIENT_URL=http://localhost:3000 (or frontend port)
-  - (optional) AWS_S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY for object storage
-
-2. Frontend
-
-  cd frontend
-  npm install
-  npm run dev
-
-  Typical env vars for the frontend (if used):
-
-  - VITE_API_BASE_URL=http://localhost:5000/api
-
-Note: This project includes `backend/uploads/` for development file storage. For production, replace upload storage with an S3-compatible target and use signed URLs.
-
-## API summary (routes)
-
-These route groups exist in `backend/routes/`:
-
-
-Refer to the actual route files in `backend/routes/` for exact endpoints and expected payloads.
-
-## Developer notes & conventions
-
-
-## Future implementations & improvements
-
-Below are feature ideas, prioritized and grouped by scope. These provide a roadmap for making Zenflow production-ready and competitive.
-
-1) High-impact / High-priority
-
-
-2) Usability & Product
-
-
-3) Growth & monetization
-
-
-4) Performance & Scalability
-
-
-5) Platform & Integrations
-
-
-6) Security & Compliance
-
-
-7) Developer experience & quality
-
-
-8) Nice-to-have / Long-term
-
-
-## Closing notes
-
-This `README.md` is intended to be a single source of truth for onboarding new contributors and for documenting the product intent and technical approach. The repository already contains the implementation skeleton (backend routes, models, and frontend pages). The next low-friction improvements are: add a basic `CONTRIBUTING.md`, add a simple CI workflow to run lint/tests, and switch uploads to S3 for production safety.
-
-If you'd like, I can:
-
-
-Thank you — let me know which follow-up you prefer and I will implement it next.
-
-
-### ✅ Core Features (MVP)
-- **Authentication** - JWT-based login/register system
-- **Project Management** - Create, edit, delete projects
-- **Task Management** - Full CRUD operations for tasks
-- **Notes System** - Add notes to projects
-- **File Uploads** - Support for PDFs, images, and documents
-- **Task Metadata** - Status, priority, dates, pricing
-- **Search & Filter** - Find tasks by status, priority, or text
-- **Responsive Design** - Works on desktop and mobile
-
-### 🎨 UI/UX
-- **Notion Black Theme** - Pure black (#000000) background
-- **Minimal Design** - Clean, distraction-free interface
-- **Smooth Animations** - 150-200ms transitions
-- **Custom Components** - Tailored for the Notion aesthetic
-- **Responsive Layout** - Sidebar + content panel design
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Node.js** + **Express.js** - Server framework
-- **MongoDB** + **Mongoose** - Database and ODM
-- **JWT** - Authentication
-- **Multer** - File upload handling
-- **bcrypt** - Password hashing
-- **express-validator** - Input validation
-
-### Frontend
-- **React** (Vite) - UI framework
-- **Tailwind CSS** - Styling
-- **React Router** - Navigation
-- **Axios** - HTTP client
-- **Lucide React** - Icons
-- **Context API** - State management
-
-## 🚀 Quick Start
-
-### Prerequisites
+Zenflow — Collaborative Project Management
+
+Zenflow is a lightweight, collaborative project-management SaaS designed for agencies, startups, and small product teams. It provides an easy, flexible way to plan work, invite collaborators, assign tasks, manage budgets, and share multimedia assets, all within a clean, distraction-free interface.
+
+It focuses on clarity, speed, and real-time collaboration for cross-functional teams, wrapped in a minimal "Notion Black" aesthetic.
+
+✅ Core Features
+
+Project & Task Management
+- Authentication: Secure JWT-based login and registration system
+- Project Management: Full C.R.U.D. (Create, Read, Update, Delete) for projects
+- Task Management: Full C.R.U.D. for tasks within projects
+- Task Metadata: Assign status, priority, due dates, and pricing to tasks
+- Notes System: Add and manage project-level notes
+- File Uploads: Attach PDFs, images, and documents to tasks
+- Search & Filter: Quickly find tasks by status, priority, or text content
+
+🎨 UI/UX
+
+Notion Black Theme: A pure black (#000000) background for a clean, focused workspace.
+Minimal Design: A distraction-free interface that prioritizes content and productivity.
+Smooth Animations: Subtle transitions (150-200ms) for a polished feel.
+Responsive Layout: A modern sidebar and content panel design that works on desktop and mobile.
+Iconography: Clean, modern icons provided by lucide-react.
+
+Color Palette
+
+```css
+/* Notion Black Theme */
+:root {
+  --notion-bg: #000000;        /* Main background */
+  --notion-surface: #0b0b0b;   /* Cards, modals */
+  --notion-border: #1f1f1f;    /* Borders */
+  --notion-text: #ffffff;      /* Primary text */
+  --notion-text-muted: #bfc1c5; /* Secondary text */
+  --notion-accent: #9aa8ff;    /* Accent color */
+}
+```
+
+🛠️ Tech Stack
+
+The repository is a monorepo containing two main folders: `backend/` and `frontend/`.
+
+Backend
+- Node.js + Express.js — Server framework
+- MongoDB + Mongoose — Database and ODM
+- JSON Web Tokens (JWT) — Authentication & authorization
+- Multer — File upload handling (local dev)
+- bcrypt — Password hashing
+- express-validator — Input validation
+
+Frontend
+- React (Vite) — UI framework
+- Tailwind CSS — Styling
+- React Router — Navigation
+- Axios — HTTP client
+- React Context API — Global state management
+- Lucide React — Icons
+
+🚀 Quick Start
+
+Prerequisites
 - Node.js (v14+)
 - MongoDB (local or Atlas)
 - npm or yarn
 
-### 1. Clone and Setup
+1. Clone and Setup
+
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd project-management-app
+cd zenflow-project
 
 # Install backend dependencies
 cd backend
@@ -212,89 +80,98 @@ cd ../frontend
 npm install
 ```
 
-### 2. Environment Configuration
-Create a `.env` file in the `backend` directory:
+2. Environment Configuration
+
+Create a `.env` file in the `backend` directory. Use `backend/.env.development` as a template if present.
+
+Example `backend/.env`:
+
 ```env
 NODE_ENV=development
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/project_management
-JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
+MONGODB_URI=mongodb://localhost:27017/zenflow
+JWT_SECRET=your_super_secret_jwt_key_here
 JWT_EXPIRE=7d
+CLIENT_URL=http://localhost:5173
 ```
 
-### 3. Start Development Servers
+(Note: The frontend `VITE_API_BASE_URL` is typically set in `frontend/.env` or configured in an API utility to point to `http://localhost:5000/api`.)
 
-**Backend** (runs on port 5000):
+3. Start Development Servers
+
+Backend (runs on http://localhost:5000):
+
 ```bash
-cd backend
+# From the /backend directory
 npm run dev
 ```
 
-**Frontend** (runs on port 5173):
+Frontend (runs on http://localhost:5173):
+
 ```bash
-cd frontend
+# From the /frontend directory
 npm run dev
 ```
 
-### 4. Access the Application
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:5000/api/health
-
-## 📁 Project Structure
+📁 Project Structure
 
 ```
-project-management-app/
+zenflow-project/
 ├── backend/
-│   ├── models/          # Mongoose schemas
-│   ├── routes/          # Express routes
-│   ├── middleware/      # Custom middleware
-│   ├── uploads/         # File storage
+│   ├── models/          # Mongoose schemas (User, Project, Task)
+│   ├── routes/          # Express API routes
+│   ├── middleware/      # Auth (JWT) and error handling
+│   ├── controllers/     # Route logic
+│   ├── uploads/         # Local file storage (dev only)
 │   └── server.js        # Main server file
 ├── frontend/
 │   ├── src/
-│   │   ├── components/  # Reusable components
-│   │   ├── pages/       # Page components
-│   │   ├── api/         # API utilities
-│   │   ├── context/     # React context
-│   │   ├── hooks/       # Custom hooks
+│   │   ├── components/  # Reusable UI components
+│   │   ├── pages/       # Page-level components
+│   │   ├── api/         # Axios API client
+│   │   ├── context/     # React context for auth/state
+│   │   ├── hooks/       # Custom React hooks
 │   │   ├── utils/       # Helper functions
-│   │   └── App.jsx      # Main app component
+│   │   └── App.jsx      # Main app component & router setup
 │   └── public/          # Static assets
 └── README.md
 ```
 
-## 🎯 API Endpoints
+🎯 API Endpoints
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
+All routes are prefixed with `/api`.
 
-### Projects
-- `GET /api/projects` - Get all projects
-- `POST /api/projects` - Create project
-- `GET /api/projects/:id` - Get project details
-- `PATCH /api/projects/:id` - Update project
-- `DELETE /api/projects/:id` - Delete project
+Authentication
+- `POST /auth/register` - Register a new user
+- `POST /auth/login` - Login user
 
-### Tasks
-- `GET /api/projects/:projectId/tasks` - Get project tasks
-- `POST /api/projects/:projectId/tasks` - Create task
-- `PATCH /api/tasks/:id` - Update task
-- `DELETE /api/tasks/:id` - Delete task
+Projects
+- `GET /projects` - Get all projects
+- `POST /projects` - Create project
+- `GET /projects/:id` - Get project details
+- `PATCH /projects/:id` - Update project
+- `DELETE /projects/:id` - Delete project
 
-### Notes
-- `GET /api/projects/:projectId/notes` - Get project notes
-- `POST /api/projects/:projectId/notes` - Create note
-- `DELETE /api/notes/:id` - Delete note
+Tasks
+- `GET /projects/:projectId/tasks` - Get project tasks
+- `POST /projects/:projectId/tasks` - Create task
+- `PATCH /tasks/:id` - Update task
+- `DELETE /tasks/:id` - Delete task
 
-### File Uploads
-- `POST /api/uploads` - Upload file
-- `GET /api/uploads/:filename` - Get file
-- `DELETE /api/uploads/:filename` - Delete file
+Notes
+- `GET /projects/:projectId/notes` - Get project notes
+- `POST /projects/:projectId/notes` - Create note
+- `DELETE /notes/:id` - Delete note
 
-## 🗄️ Database Schemas
+File Uploads
+- `POST /uploads` - Upload a file (used by task creation)
+- `GET /uploads/:filename` - Serve an uploaded file
+- `DELETE /api/uploads/:filename` - Delete a file
 
-### User
+🗄️ Database Schemas (High-Level)
+
+User
+
 ```javascript
 {
   name: String,
@@ -304,22 +181,24 @@ project-management-app/
 }
 ```
 
-### Project
+Project
+
 ```javascript
 {
   title: String,
   description: String,
-  owner: ObjectId (User),
-  members: [ObjectId (User)],
-  createdAt: Date,
-  updatedAt: Date
+  owner: ObjectId (ref: 'User'),
+  members: [ObjectId (ref: 'User')],
+  budget: Number,
+  createdAt: Date
 }
 ```
 
-### Task
+Task
+
 ```javascript
 {
-  project: ObjectId (Project),
+  project: ObjectId (ref: 'Project'),
   title: String,
   description: String,
   status: 'todo' | 'in-progress' | 'done',
@@ -328,72 +207,72 @@ project-management-app/
   dueDate: Date,
   price: Number,
   attachments: [{ filename, url, mimeType }],
-  createdBy: ObjectId (User),
-  assignees: [ObjectId (User)],
-  createdAt: Date,
-  updatedAt: Date
+  createdBy: ObjectId (ref: 'User'),
+  assignees: [ObjectId (ref: 'User')],
+  createdAt: Date
 }
 ```
 
-## 🎨 Color Palette
+🔮 Future Roadmap & Improvements
 
-```css
-/* Notion Black Theme */
---notion-bg: #000000        /* Main background */
---notion-surface: #0b0b0b   /* Cards, modals */
---notion-border: #1f1f1f    /* Borders */
---notion-text: #ffffff      /* Primary text */
---notion-text-muted: #bfc1c5 /* Secondary text */
---notion-accent: #9aa8ff    /* Accent color */
-```
+Below is a prioritized roadmap for making Zenflow production-ready and competitive.
 
-## 🚀 Deployment
+1) High-Impact / High-Priority
 
-### Backend Deployment
-1. Set production environment variables
-2. Use a process manager like PM2
-3. Configure reverse proxy (nginx)
-4. Set up MongoDB Atlas or production DB
+- S3-Compatible Storage: Replace local multer storage with a cloud solution (S3, R2, etc.) for file uploads.
+- Invitations System: Implement a proper email-based invitation system for adding collaborators to projects.
+- User Roles & Permissions: Add roles (e.g., Admin, Member, Guest) to control C.R.U.D. access within projects.
+- Real-time Updates (WebSockets): Integrate Socket.io or similar for live updates on task changes, new comments, etc.
+- Comments System: Add threaded comments to tasks for team communication.
 
-### Frontend Deployment
-1. Build the production bundle: `npm run build`
-2. Deploy to Vercel, Netlify, or static hosting
-3. Update API base URL for production
+2) Usability & Product
 
-## 🔮 Future Enhancements
+- Kanban Board View: Add a drag-and-drop board view for tasks.
+- Calendar View: Implement a calendar to visualize task start/due dates.
+- Global Search: A command-k (⌘K) style modal to search across all projects, tasks, and notes.
+- Rich Text Editor: Replace plain textareas with a block-style editor (like TipTap or Editor.js) for task descriptions and notes.
+- Notifications: In-app notification center for mentions, assignments, and due dates.
 
-### Phase 2 Features
-- **Kanban Board** - Drag-and-drop task management
-- **Calendar View** - Timeline visualization
-- **Comments System** - Task discussions
-- **Tag System** - Organize with labels
-- **Team Collaboration** - Sharing and permissions
-- **Rich Text Editor** - Notion-style block editor
-- **Real-time Updates** - WebSocket integration
-- **Mobile App** - React Native version
+3) Growth & Monetization
 
-## 🤝 Contributing
+- Team Workspaces: Introduce a "Workspace" or "Organization" level above Projects.
+- Subscription Logic (Stripe): Integrate Stripe for SaaS plans (e.g., Free, Pro, Team) with feature flags.
+- Onboarding Flow: Create a guided setup for new users to create their first project and invite a teammate.
+
+4) Performance & Scalability
+
+- Database Indexing: Add indexes to Mongoose models for common query fields (e.g., project on Tasks, email on Users).
+- API Rate Limiting: Implement express-rate-limit to prevent abuse.
+- Frontend State Caching: Use a tool like react-query or swr to manage server state, caching, and re-validation.
+- Lazy Loading: Code-split frontend pages and heavy components.
+
+5) Platform & Integrations
+
+- Public API: Document and version the API for third-party use.
+- Webhook Support: Fire webhooks on key events (task created, project completed).
+- Slack/Discord Integration: Send notifications to team chat.
+- GitHub/GitLab Integration: Link commits and pull requests to tasks.
+
+6) Security & Compliance
+
+- CORS Configuration: Lock down CORS to specific production frontend domains.
+- Helmet.js: Add Helmet to the Express backend for common security headers.
+- Audit Logging: Create a log of sensitive actions (project deleted, user added).
+- OAuth Login: Add "Sign in with Google" and "Sign in with GitHub."
+
+7) Developer Experience & Quality
+
+- CI/CD Pipeline: Add a GitHub Action to run lint, tests, and (optionally) deploy on push to main.
+- Unit & Integration Tests: Add Jest/Vitest tests for backend controllers and frontend hooks.
+- E2E Tests: Implement Playwright or Cypress tests for critical user flows.
+- TypeScript Migration: Convert the backend and frontend to TypeScript for better type safety.
+
+🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-
-## Checklist
-
-- ✅ User authentication (register/login)
-- ✅ Create and manage projects
-- ✅ CRUD operations for tasks
-- ✅ Task metadata (dates, price, status, priority)
-- ✅ File upload functionality
-- ✅ Notes system for projects
-- ✅ Responsive design
-- ✅ MongoDB data persistence
-- ✅ JWT-based authentication
-- ✅ Search and filter capabilities
-
----
-
-**Built with ❤️ using the MERN Stack**
+2. Create a new feature branch: `git checkout -b feature/your-amazing-feature`
+3. Make your changes and commit them: `git commit -m 'Add amazing feature'`
+4. Push to your branch: `git push origin feature/your-amazing-feature`
+5. Open a Pull Request against the main branch.
