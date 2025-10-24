@@ -12,7 +12,8 @@ const Index = () => {
         <div className="space-y-4">
           <h1 className="text-5xl font-bold tracking-tight">zenflow</h1>
           <p className="text-xl text-muted-foreground">
-            A modern project and task management system with a premium Notion-inspired design
+            A modern project and task management system built for teams who value
+            simplicity and efficiency.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">

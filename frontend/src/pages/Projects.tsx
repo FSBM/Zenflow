@@ -86,7 +86,7 @@ const Projects = () => {
         </div>
 
   {/* Projects Grid */}
-  <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+  <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project) => {
             // Defensive defaults for fields that may be missing from server
               const tasksCompleted = Number(project.tasksCompleted ?? 0);
