@@ -21,10 +21,8 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/home" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <FolderKanban className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold">TaskFlow</span>
+            <img src="/zenflow.svg" alt="zenflow" className="h-8 w-8" />
+            <span className="text-xl font-semibold">zenflow</span>
           </Link>
 
           {/* Desktop Navigation */}

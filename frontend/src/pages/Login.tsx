@@ -82,10 +82,8 @@ const Login = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div className="flex flex-col items-center space-y-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <FolderKanban className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">TaskFlow</h1>
+          <img src="/zenflow.svg" alt="zenflow" className="h-12 w-12" />
+          <h1 className="text-3xl font-bold tracking-tight">zenflow</h1>
           <p className="text-sm text-muted-foreground">Manage your projects with ease</p>
         </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { projects as apiProjects } from '@/lib/api';
 import Navbar from "@/components/Navbar";
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import StatusBadge from '@/components/StatusBadge';
 import { Button } from "@/components/ui/button";
@@ -160,6 +161,7 @@ export default Projects;
 
 // Small form component inserted here to keep this file self-contained.
 function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [memberEmailInput, setMemberEmailInput] = useState('');
@@ -211,7 +213,7 @@ function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
         </DialogClose>
         <Button onClick={async () => {
           if (!title.trim()) {
-            window.alert('Please provide a title');
+            toast({ title: 'Please provide a title', variant: 'destructive' });
             return;
           }
           setLoading(true);
@@ -226,9 +228,9 @@ function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
             // If server returned missing emails, show that to user
             const details = err?.details;
             if (details && details.missing) {
-              window.alert(`These emails were not found: ${details.missing.join(', ')}`);
+              toast({ title: `These emails were not found: ${details.missing.join(', ')}`, variant: 'destructive' });
             } else {
-              window.alert('Failed to create project');
+              toast({ title: 'Failed to create project', variant: 'destructive' });
             }
           } finally {
             setLoading(false);

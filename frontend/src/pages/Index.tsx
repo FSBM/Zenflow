@@ -7,12 +7,10 @@ const Index = () => {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="max-w-2xl space-y-8 px-4 text-center">
         <div className="flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
-            <FolderKanban className="h-9 w-9 text-primary-foreground" />
-          </div>
+          <img src="/zenflow.svg" alt="zenflow" className="h-16 w-16" />
         </div>
         <div className="space-y-4">
-          <h1 className="text-5xl font-bold tracking-tight">TaskFlow</h1>
+          <h1 className="text-5xl font-bold tracking-tight">zenflow</h1>
           <p className="text-xl text-muted-foreground">
             A modern project and task management system with a premium Notion-inspired design
           </p>

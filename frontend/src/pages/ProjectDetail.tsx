@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { projects as apiProjects, tasks as apiTasks, notes as apiNotes, invites as apiInvites, uploads as apiUploads } from '@/lib/api';
 import Navbar from "@/components/Navbar";
+import { useToast } from '@/hooks/use-toast';
 import StatusBadge from "@/components/StatusBadge";
 import PriorityBadge from "@/components/PriorityBadge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,9 +155,11 @@ const ProjectDetail = () => {
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
+  
+
   const handleAddTask = async () => {
     if (!newTask.title) {
-      window.alert('Task title is required');
+      toast({ title: 'Task title is required', variant: 'destructive' });
       return;
     }
     // Optimistic UI: insert a temp task immediately
@@ -191,15 +194,46 @@ const ProjectDetail = () => {
       } else {
         // if no task returned, remove temp
         setTasks((prev) => prev.filter((x) => x.id !== tempId));
-        window.alert('Failed to add task (no task returned)');
+        toast({ title: 'Failed to add task (no task returned)', variant: 'destructive' });
       }
     } catch (err) {
       console.error('Create task error', err);
       setTasks((prev) => prev.filter((x) => x.id !== tempId));
       const details = (err as any)?.details;
-      if (details) window.alert(JSON.stringify(details));
-      else window.alert('Failed to add task');
+      if (details) toast({ title: JSON.stringify(details), variant: 'destructive' });
+      else toast({ title: 'Failed to add task', variant: 'destructive' });
     }
+  };
+
+  // use toast for notifications and simple confirmations
+  const { toast, dismiss } = useToast();
+
+  const askConfirm = (message: string) => {
+    return new Promise<boolean>((resolve) => {
+      let handle: any = null;
+      handle = toast({
+        title: message,
+        variant: 'destructive',
+        action: (
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                try { handle?.dismiss(); } catch (e) {}
+                resolve(true);
+              }}
+            >Delete</Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                try { handle?.dismiss(); } catch (e) {}
+                resolve(false);
+              }}
+            >Cancel</Button>
+          </div>
+        ),
+      });
+    });
   };
 
   return (
@@ -234,25 +268,25 @@ const ProjectDetail = () => {
                     <label className="text-sm">Email</label>
                     <Input value={inviteEmail} onChange={(e)=>setInviteEmail(e.target.value)} placeholder="user@example.com" />
                   </div>
-                  <DialogFooter>
+                    <DialogFooter>
                     <DialogClose asChild>
                       <Button variant="ghost">Cancel</Button>
                     </DialogClose>
                     <Button onClick={async ()=>{
-                      if (!String(inviteEmail).trim()) { window.alert('Please enter an email'); return; }
+                      if (!String(inviteEmail).trim()) { toast({ title: 'Please enter an email', variant: 'destructive' }); return; }
                       try {
                         const res = await apiInvites.create(id!, inviteEmail.trim());
                         if (res && (res as any).invite) {
-                          window.alert('Invite sent');
+                          toast({ title: 'Invite sent' });
                           setInviteEmail('');
                           setInviteOpen(false);
                         } else {
-                          window.alert('Invite request sent');
+                          toast({ title: 'Invite request sent' });
                         }
                       } catch (err:any) {
                         console.error('Invite failed', err);
                         const msg = err?.details?.message || err?.message || 'Failed to send invite';
-                        window.alert(String(msg));
+                        toast({ title: String(msg), variant: 'destructive' });
                       }
                     }}>Send Invite</Button>
                   </DialogFooter>
@@ -291,10 +325,10 @@ const ProjectDetail = () => {
                     try {
                       const res = await apiProjects.update(id!, { status: val });
                       if (res && (res as any).project) setProject((res as any).project);
-                    } catch (err) {
+                      } catch (err) {
                       console.error('Failed to update project status', err);
                       setProject(prev);
-                      window.alert('Failed to update project status');
+                      toast({ title: 'Failed to update project status', variant: 'destructive' });
                     }
                   }}
                   className="rounded-md border border-input bg-input px-2 py-1 text-input-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -457,7 +491,7 @@ const ProjectDetail = () => {
                               const target = task.status === 'Done' ? 'in-progress' : 'done';
                               const res: any = await apiTasks.update(task.id, { status: target });
                               if (res && res.task) updateTaskOnClient(res.task);
-                            } catch (e) { console.error(e); window.alert('Failed to update status'); }
+                            } catch (e) { console.error(e); toast({ title: 'Failed to update status', variant: 'destructive' }); }
                           }}
                           className={`h-5 w-5 rounded-full border flex items-center justify-center ${task.status === 'Done' ? 'bg-green-500' : 'bg-yellow-400'}`}
                         />
@@ -493,7 +527,7 @@ const ProjectDetail = () => {
                             } catch (err) {
                               console.error('Failed to update status', err);
                               setTasks(prev);
-                              window.alert('Failed to update status');
+                              toast({ title: 'Failed to update status', variant: 'destructive' });
                             }
                           }}
                           title="Click to cycle status: Todo → In Progress → Done"
@@ -524,15 +558,16 @@ const ProjectDetail = () => {
                               try {
                                 const res: any = await apiTasks.update(task.id, { status: 'todo', assignees: [] });
                                 if (res && res.task) updateTaskOnClient(res.task);
-                              } catch (e) { console.error(e); setTasks(prev); window.alert('Failed to reset task'); }
+                              } catch (e) { console.error(e); setTasks(prev); toast({ title: 'Failed to reset task', variant: 'destructive' }); }
                             }}>Reset to Default</DropdownMenuItem>
                             <DropdownMenuItem onClick={async () => {
-                              if (!confirm('Delete this task?')) return;
+                              const confirmed = await askConfirm('Delete this task?');
+                              if (!confirmed) return;
                               const prev = tasks;
                               setTasks((t) => t.filter((x) => String(x.id) !== String(task.id)));
                               try {
                                 await apiTasks.delete(task.id);
-                              } catch (e) { console.error(e); setTasks(prev); window.alert('Failed to delete task'); }
+                              } catch (e) { console.error(e); setTasks(prev); toast({ title: 'Failed to delete task', variant: 'destructive' }); }
                             }}>Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -599,7 +634,7 @@ const ProjectDetail = () => {
                           </DialogClose>
                           <Button onClick={async () => {
                             if (!String(notesText).trim()) {
-                              window.alert('Please enter note text');
+                              toast({ title: 'Please enter note text', variant: 'destructive' });
                               return;
                             }
                             // optimistic UI: add a temp note
@@ -618,7 +653,7 @@ const ProjectDetail = () => {
                             } catch (e) {
                               console.error('Failed to create note', e);
                               setNotesList(prevNotes);
-                              window.alert('Failed to add note');
+                              toast({ title: 'Failed to add note', variant: 'destructive' });
                             }
                           }}>Save</Button>
                         </DialogFooter>
@@ -643,7 +678,7 @@ const ProjectDetail = () => {
                               setNotesList((n) => n.filter((x) => (x.id || x._id) !== (note.id || note._id)));
                             } catch (e) {
                               console.error('Failed to delete note', e);
-                              window.alert('Failed to delete note');
+                              toast({ title: 'Failed to delete note', variant: 'destructive' });
                             }
                           }}>
                             <MoreHorizontal className="h-4 w-4" />
@@ -693,7 +728,7 @@ const ProjectDetail = () => {
                       console.error('Upload failed', err);
                       setFiles((prev) => prev.filter(x => !String(x.id).startsWith('temp-')));
                       const msg = err?.details?.message || err?.message || 'Upload failed';
-                      window.alert(String(msg));
+                      toast({ title: String(msg), variant: 'destructive' });
                     } finally {
                       // clear file input value so same file can be reselected
                       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -731,7 +766,8 @@ const ProjectDetail = () => {
                           <Download className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={async () => {
-                          if (!confirm('Delete this file?')) return;
+                          const confirmed = await askConfirm('Delete this file?');
+                          if (!confirmed) return;
                           const prev = files;
                           setFiles((farr) => farr.filter((x) => x.id !== file.id));
                           try {
@@ -739,7 +775,7 @@ const ProjectDetail = () => {
                           } catch (e) {
                             console.error('Failed to delete file', e);
                             setFiles(prev);
-                            window.alert('Failed to delete file');
+                            toast({ title: 'Failed to delete file', variant: 'destructive' });
                           }
                         }}>
                           <Trash className="h-4 w-4" />

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
+import { useToast } from '@/hooks/use-toast';
 import { invites as apiInvites } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 
 export default function Inbox() {
   const [invites, setInvites] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const load = async () => {
     setLoading(true);
@@ -28,7 +30,7 @@ export default function Inbox() {
       setInvites(prev => prev.filter(i => i._id !== id && i.id !== id));
     } catch (err) {
       console.error(err);
-      window.alert('Failed to respond to invite');
+      toast({ title: 'Failed to respond to invite', variant: 'destructive' });
     }
   };
 
