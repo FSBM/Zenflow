@@ -18,18 +18,30 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename="/frontend">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<ProjectDetail />} />
-          <Route path="/inbox" element={<Inbox />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      {/* Compute basename from Vite's BASE_URL so dev (/) works and production
+          builds using VITE_BASE (for example "/frontend/") also work. */}
+      {
+        // import.meta.env.BASE_URL is provided by Vite and equals the `base`
+        // config used when building. In dev it's usually '/'. We normalize it
+        // and pass `undefined` to BrowserRouter for the default root behavior.
+      }
+      {(() => {
+        const b = import.meta.env.BASE_URL as string | undefined;
+        const normalized = b && b !== "/" ? b.replace(/\/$/, "") : undefined;
+        return <BrowserRouter basename={normalized}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:id" element={<ProjectDetail />} />
+            <Route path="/inbox" element={<Inbox />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>;
+      })()}
+      
     </TooltipProvider>
   </QueryClientProvider>
 );
