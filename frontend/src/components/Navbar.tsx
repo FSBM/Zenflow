@@ -20,9 +20,9 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/home" className="flex items-center space-x-2">
-            <img src="/zenflow.svg" alt="zenflow" className="h-8 w-8" />
-            <span className="text-xl font-semibold">zenflow</span>
+          <Link to="/home" className="flex items-end space-x-1 mt-1">
+            <img src="/zenflow.svg" alt="zenflow" className="h-8 w-8 pb-1" />
+            <span className="text-xl font-semibold">enflow</span>
           </Link>
 
           {/* Desktop Navigation */}

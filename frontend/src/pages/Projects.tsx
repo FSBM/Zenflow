@@ -19,6 +19,7 @@ const Projects = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateOpen, setCreateOpen] = useState(false);
   const { showLoading, hideLoading } = useLoading();
   
   useEffect(() => {
@@ -55,7 +56,7 @@ const Projects = () => {
             <h1 className="mb-2 text-3xl font-bold">Projects</h1>
             <p className="text-muted-foreground">Manage and track all your projects</p>
           </div>
-          <Dialog>
+          <Dialog open={isCreateOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -67,7 +68,7 @@ const Projects = () => {
                 <DialogTitle>Create Project</DialogTitle>
                 <DialogDescription>Provide a title and optional description for the new project.</DialogDescription>
               </DialogHeader>
-              <ProjectCreateForm onCreated={(proj) => setProjects((p) => [proj, ...p])} />
+              <ProjectCreateForm onCreated={(proj) => { setProjects((p) => [proj, ...p]); setCreateOpen(false); }} />
             </DialogContent>
           </Dialog>
         </div>

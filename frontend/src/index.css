@@ -85,6 +85,17 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    /* Status colors (used by StatusBadge via tailwind tokens like text-status-done) */
+    --status-backlog: oklch(0.48 0.05 262); /* muted indigo */
+    --status-todo: oklch(0.58 0.12 220); /* blue */
+    --status-progress: oklch(0.82 0.14 95); /* warm yellow */
+    --status-done: oklch(0.62 0.18 140); /* green */
+    --status-canceled: oklch(0.64 0.20 28); /* red */
+
+    /* Priority colors (used by PriorityBadge) */
+    --priority-low: oklch(0.62 0.10 130); /* light green */
+    --priority-medium: oklch(0.66 0.16 48); /* orange */
+    --priority-high: oklch(0.64 0.22 28); /* vivid red */
   }
 
   /* Light variant (applies when .dark class is present) - kept under .dark to preserve toggling logic
@@ -123,6 +134,17 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+    /* Light-theme status colors */
+    --status-backlog: oklch(0.32 0.03 260);
+    --status-todo: oklch(0.28 0.10 220);
+    --status-progress: oklch(0.95 0.12 95);
+    --status-done: oklch(0.28 0.18 140);
+    --status-canceled: oklch(0.32 0.20 28);
+
+    /* Light-theme priority colors */
+    --priority-low: oklch(0.32 0.08 130);
+    --priority-medium: oklch(0.44 0.14 48);
+    --priority-high: oklch(0.32 0.20 28);
   }
 }
 

@@ -65,6 +65,9 @@ const ProjectDetail = () => {
   const [newTask, setNewTask] = useState({ title: '', description: '', assignee: '', dueDate: '', priority: 'Medium' });
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [isDetailOpen, setDetailOpen] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<any | null>(null);
+  const [isNoteOpen, setNoteOpen] = useState(false);
+  const [isAddNoteOpen, setAddNoteOpen] = useState(false);
 
   const teamMembers = Array.isArray(project?.members) ? project!.members : [];
 
@@ -504,7 +507,7 @@ const ProjectDetail = () => {
                               if (res && res.task) updateTaskOnClient(res.task);
                             } catch (e) { console.error(e); toast({ title: 'Failed to update status', variant: 'destructive' }); }
                           }}
-                          className={`h-5 w-5 rounded-full border flex items-center justify-center ${task.status === 'Done' ? 'bg-green-500' : 'bg-yellow-400'}`}
+                          className={`h-2 w-2 rounded-full border flex items-center justify-center mr-2 ${task.status === 'Done' ? 'bg-green-500' : 'bg-yellow-400'}`}
                         />
                         <div className="flex flex-col min-w-0">
                           <button className="text-left" onClick={() => { setSelectedTask(task); setDetailOpen(true); }}>
@@ -626,7 +629,7 @@ const ProjectDetail = () => {
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">{notesList.length} note{notesList.length !== 1 ? 's' : ''}</p>
                   <div className="flex gap-2">
-                    <Dialog>
+                    <Dialog open={isAddNoteOpen} onOpenChange={setAddNoteOpen}>
                       <DialogTrigger asChild>
                         <Button className="gap-2"><Plus className="h-4 w-4" />Add Note</Button>
                       </DialogTrigger>
@@ -657,9 +660,11 @@ const ProjectDetail = () => {
                               const res = await apiNotes.create(id!, notesText);
                               if (res && (res as any).note) {
                                 setNotesList((n) => [ (res as any).note, ...n.filter(x => x.id !== tempNote.id) ]);
+                                setAddNoteOpen(false);
                               } else {
                                 const list = await apiNotes.list(id!);
                                 setNotesList(Array.isArray(list) ? list : (list as any).notes || []);
+                                setAddNoteOpen(false);
                               }
                             } catch (e) {
                               console.error('Failed to create note', e);
@@ -676,29 +681,56 @@ const ProjectDetail = () => {
                 <div className="space-y-3">
                   {notesList.length === 0 && <p className="text-muted-foreground">No notes yet</p>}
                   {notesList.map((note) => (
-                    <div key={note.id || note._id} className="border p-3 rounded-md">
+                    <div key={note.id || note._id} className="border p-3 rounded-md cursor-pointer" onClick={() => { setSelectedNote(note); setNoteOpen(true); }}>
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm">{note.body}</p>
                           <p className="text-xs text-muted-foreground">By {note.createdBy?.name ?? 'Unknown'} • {note.createdAt ? new Date(String(note.createdAt)).toLocaleString() : '—'}</p>
                         </div>
                         <div>
-                          <Button variant="ghost" size="icon" onClick={async () => {
+                          <Button variant="ghost" size="icon" onClick={async (e) => {
+                            e.stopPropagation();
+                            const confirmed = await askConfirm('Delete this note?');
+                            if (!confirmed) return;
+                            const prev = notesList;
+                            setNotesList((n) => n.filter((x) => (x.id || x._id) !== (note.id || note._id)));
                             try {
                               await apiNotes.delete(note.id || note._id);
-                              setNotesList((n) => n.filter((x) => (x.id || x._id) !== (note.id || note._id)));
-                            } catch (e) {
-                              console.error('Failed to delete note', e);
+                              toast({ title: 'Note deleted' });
+                            } catch (err) {
+                              console.error('Failed to delete note', err);
+                              setNotesList(prev);
                               toast({ title: 'Failed to delete note', variant: 'destructive' });
                             }
                           }}>
-                            <MoreHorizontal className="h-4 w-4" />
+                            <Trash className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
+                {/* Note Details Dialog */}
+                <Dialog open={isNoteOpen} onOpenChange={setNoteOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Note</DialogTitle>
+                    </DialogHeader>
+                    {selectedNote ? (
+                      <div className="space-y-3">
+                        <p className="text-sm">{selectedNote.body}</p>
+                        <p className="text-xs text-muted-foreground">By {selectedNote.createdBy?.name ?? 'Unknown'} • {selectedNote.createdAt ? new Date(String(selectedNote.createdAt)).toLocaleString() : '—'}</p>
+                      </div>
+                    ) : (
+                      <p>No note selected</p>
+                    )}
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="ghost">Close</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
           </TabsContent>
