@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tooltip } from '@/components/ui/tooltip';
+import { useLoading } from '@/components/LoadingProvider';
 
 type Status = "Backlog" | "Todo" | "In Progress" | "Done" | "Canceled";
 type Priority = "High" | "Medium" | "Low";
@@ -69,6 +70,7 @@ const ProjectDetail = () => {
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviteOpen, setInviteOpen] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
 
   const uiToApiStatus = (uiStatus: string) => {
     switch ((uiStatus || '').toLowerCase()) {
@@ -104,6 +106,7 @@ const ProjectDetail = () => {
     const load = async () => {
       if (!id) return;
       setLoading(true);
+      showLoading();
       try {
         const res = await apiProjects.get(id);
         const projectData = (res && typeof res === 'object' && 'project' in (res as any)) ? (res as any).project : null;
@@ -141,6 +144,7 @@ const ProjectDetail = () => {
         console.error(err);
       } finally {
         setLoading(false);
+        hideLoading();
       }
     };
     load();
@@ -185,6 +189,8 @@ const ProjectDetail = () => {
   if (newTask.dueDate) payload.dueDate = new Date(newTask.dueDate).toISOString();
     // include priority in payload; backend expects lowercase values: low|medium|high
     if (newTask.priority) payload.priority = String(newTask.priority).toLowerCase();
+      // show global overlay while awaiting server
+      showLoading();
       const res = await apiTasks.create(id!, payload);
       const taskObj = res && typeof res === 'object' && 'task' in (res as any) ? (res as any).task : null;
       if (taskObj) {
@@ -202,6 +208,8 @@ const ProjectDetail = () => {
       const details = (err as any)?.details;
       if (details) toast({ title: JSON.stringify(details), variant: 'destructive' });
       else toast({ title: 'Failed to add task', variant: 'destructive' });
+    } finally {
+      hideLoading();
     }
   };
 
@@ -275,6 +283,7 @@ const ProjectDetail = () => {
                     <Button onClick={async ()=>{
                       if (!String(inviteEmail).trim()) { toast({ title: 'Please enter an email', variant: 'destructive' }); return; }
                       try {
+                        showLoading();
                         const res = await apiInvites.create(id!, inviteEmail.trim());
                         if (res && (res as any).invite) {
                           toast({ title: 'Invite sent' });
@@ -287,6 +296,8 @@ const ProjectDetail = () => {
                         console.error('Invite failed', err);
                         const msg = err?.details?.message || err?.message || 'Failed to send invite';
                         toast({ title: String(msg), variant: 'destructive' });
+                      } finally {
+                        hideLoading();
                       }
                     }}>Send Invite</Button>
                   </DialogFooter>

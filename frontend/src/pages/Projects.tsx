@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Calendar, DollarSign } from "lucide-react";
 import { formatCurrencyINR } from '@/lib/utils';
+import { useLoading } from '@/components/LoadingProvider';
 
 const Projects = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,10 +19,12 @@ const Projects = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showLoading, hideLoading } = useLoading();
   
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      showLoading();
       try {
         const res = await (await import('@/lib/api')).projects.list();
         setProjects(res || []);
@@ -30,6 +33,7 @@ const Projects = () => {
         setError(err?.message || 'Failed to load projects');
       } finally {
         setLoading(false);
+        hideLoading();
       }
     };
     load();
@@ -162,6 +166,7 @@ export default Projects;
 // Small form component inserted here to keep this file self-contained.
 function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
   const { toast } = useToast();
+  const { showLoading, hideLoading } = useLoading();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [memberEmailInput, setMemberEmailInput] = useState('');
@@ -217,6 +222,7 @@ function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
             return;
           }
           setLoading(true);
+          showLoading();
           try {
             const payload: any = { title: title.trim(), description: description.trim() };
             if (memberEmails.length > 0) payload.memberEmails = memberEmails;
@@ -234,6 +240,7 @@ function ProjectCreateForm({ onCreated }: { onCreated: (p: any) => void }) {
             }
           } finally {
             setLoading(false);
+            hideLoading();
           }
         }} disabled={loading}>{loading ? 'Creating...' : 'Create'}</Button>
       </DialogFooter>

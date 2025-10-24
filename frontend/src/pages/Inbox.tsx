@@ -3,14 +3,17 @@ import Navbar from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 import { invites as apiInvites } from '@/lib/api';
 import { Button } from '@/components/ui/button';
+import { useLoading } from '@/components/LoadingProvider';
 
 export default function Inbox() {
   const [invites, setInvites] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
   const { toast } = useToast();
 
   const load = async () => {
     setLoading(true);
+    showLoading();
     try {
       const res = await apiInvites.list();
       setInvites((res as any).invites || []);
@@ -18,6 +21,7 @@ export default function Inbox() {
       console.error(err);
     } finally {
       setLoading(false);
+      hideLoading();
     }
   };
 
@@ -25,12 +29,15 @@ export default function Inbox() {
 
   const respond = async (id: string, action: 'accept' | 'decline') => {
     try {
+      showLoading();
       await apiInvites.respond(id, action);
       // remove from list
       setInvites(prev => prev.filter(i => i._id !== id && i.id !== id));
     } catch (err) {
       console.error(err);
       toast({ title: 'Failed to respond to invite', variant: 'destructive' });
+    } finally {
+      hideLoading();
     }
   };
 

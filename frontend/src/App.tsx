@@ -10,14 +10,16 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
+import LoadingProvider from "./components/LoadingProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
+      <LoadingProvider>
+        <Toaster />
+        <Sonner />
       {/* Compute basename from Vite's BASE_URL so dev (/) works and production
           builds using VITE_BASE (for example "/frontend/") also work. */}
       {
@@ -41,7 +43,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>;
       })()}
-      
+      </LoadingProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

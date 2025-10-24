@@ -9,11 +9,13 @@ import { FolderKanban } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { request } from '@/lib/api';
 import { setToken, setUser } from '@/lib/auth';
+import { useLoading } from '@/components/LoadingProvider';
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({ name: "", email: "", password: "" });
@@ -21,6 +23,7 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    showLoading();
     try {
       // basic client-side validation to avoid obvious 400s
       if (!loginData.email || !loginData.password) {
@@ -53,12 +56,14 @@ const Login = () => {
       toast({ title: 'Login failed', description: desc });
     } finally {
       setIsLoading(false);
+      hideLoading();
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    showLoading();
     try {
       const resAny = await request('/api/auth/register', { method: 'POST', body: registerData }) as any;
       if (resAny?.token) {
@@ -74,6 +79,7 @@ const Login = () => {
       toast({ title: 'Registration failed', description: err?.details?.message || err?.message || 'Unknown error' });
     } finally {
       setIsLoading(false);
+      hideLoading();
     }
   };
 

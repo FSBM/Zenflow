@@ -4,15 +4,18 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FolderKanban, CheckCircle2, Clock, ArrowRight } from "lucide-react";
+import { useLoading } from '@/components/LoadingProvider';
 
 const Home = () => {
   // Real stats from backend
   const [stats, setStats] = useState({ totalProjects: 0, activeProjects: 0, completedTasks: 0, pendingTasks: 0 });
   const [loading, setLoading] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
 
   useEffect(() => {
     const loadStats = async () => {
       setLoading(true);
+      showLoading();
       try {
         const res = await (await import('@/lib/api')).projects.list();
         const projects = Array.isArray(res) ? res : [];
@@ -35,6 +38,7 @@ const Home = () => {
         console.error('Failed to load dashboard stats', err);
       } finally {
         setLoading(false);
+        hideLoading();
       }
     };
     loadStats();
@@ -128,10 +132,12 @@ export default Home;
 function AssignedTasksList() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      showLoading();
       try {
         const { tasks: apiTasks } = await import('@/lib/api');
         const res = await apiTasks.assigned();
@@ -141,6 +147,7 @@ function AssignedTasksList() {
         console.error('Failed to load assigned tasks', err);
       } finally {
         setLoading(false);
+        hideLoading();
       }
     };
     load();
