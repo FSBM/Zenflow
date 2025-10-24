@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>404 — Redirecting</title>
+    <meta name="robots" content="noindex" />
+    <script>
+      // SPA fallback for static hosts (GitHub Pages etc).
+      // Fetch the built index.html, write it into the document, then restore the original URL
+      // so the client-side router (react-router) can handle the route.
+      (function () {
+        var path = location.pathname + location.search + location.hash;
+        fetch('/index.html')
+          .then(function (res) { return res.text(); })
+          .then(function (html) {
+            document.open();
+            document.write(html);
+            document.close();
+            try { history.replaceState({}, '', path); } catch (e) {}
+          })
+          .catch(function () {
+            // If anything goes wrong, fall back to root
+            location.replace('/');
+          });
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
