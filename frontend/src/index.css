@@ -51,58 +51,78 @@ All colors MUST be HSL.
 */
 
 @layer base {
+  /* Default: dark / black theme */
   :root {
-    /* Notion Dark Theme - Premium Black Aesthetic */
-    --background: 220 13% 8%;
-    --foreground: 210 20% 98%;
+    --radius: 0.65rem;
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
 
-    --card: 220 13% 11%;
-    --card-foreground: 210 20% 98%;
-
-    --popover: 220 13% 10%;
-    --popover-foreground: 210 20% 98%;
-
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 20% 98%;
-
-    --secondary: 220 13% 15%;
-    --secondary-foreground: 210 20% 98%;
-
-    --muted: 220 13% 15%;
-    --muted-foreground: 220 9% 55%;
-
-    --accent: 217 91% 60%;
-    --accent-foreground: 210 20% 98%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 20% 98%;
-
-    --border: 220 13% 18%;
-    --input: 220 13% 15%;
-    --ring: 217 91% 60%;
-
-    --radius: 0.5rem;
-
-    /* Status colors */
-    --status-backlog: 220 9% 46%;
-    --status-todo: 217 91% 60%;
-    --status-progress: 271 81% 66%;
-    --status-done: 142 76% 36%;
-    --status-canceled: 0 0% 40%;
-
-    /* Priority colors */
-    --priority-low: 220 9% 55%;
-    --priority-medium: 43 96% 56%;
-    --priority-high: 0 72% 51%;
-
-    --sidebar-background: 220 13% 9%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 210 20% 98%;
-    --sidebar-accent: 220 13% 14%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 220 13% 18%;
-    --sidebar-ring: 217 91% 60%;
+  /* Light variant (applies when .dark class is present) - kept under .dark to preserve toggling logic
+     Note: This flips the toggle: adding the `dark` class will now show the light theme. */
+  .dark {
+    --radius: 0.65rem;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
   }
 }
 
@@ -115,6 +135,9 @@ All colors MUST be HSL.
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: 'GT Walsheim', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    /* Ensure legacy direct uses of CSS vars use the function value */
+    background: var(--background);
+    color: var(--foreground);
   }
 
   /* Scrollbar styling for dark theme */
@@ -124,15 +147,15 @@ All colors MUST be HSL.
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
+    background: var(--background);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
+    background: var(--muted);
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    background: var(--muted-foreground);
   }
 }
